@@ -1,0 +1,183 @@
+{
+  "info": {
+    "name": "Milkman Backend API",
+    "_postman_id": "b7f8e6a1-1234-4abc-9999-milkman-api",
+    "description": "Complete API testing collection for Milkman Django Backend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000/api" },
+    { "key": "customer_token", "value": "" },
+    { "key": "admin_token", "value": "" },
+    { "key": "customer_refresh", "value": "" },
+    { "key": "admin_refresh", "value": "" },
+    { "key": "category_id", "value": "" },
+    { "key": "product_id", "value": "" },
+    { "key": "order_id", "value": "" },
+    { "key": "payment_id", "value": "" },
+    { "key": "transaction_id", "value": "" },
+    { "key": "cart_item_id", "value": "" }
+  ],
+  "item": [
+
+    {
+      "name": "Register Customer",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"john_doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"customer123\",\n  \"password_confirm\": \"customer123\",\n  \"phone_number\": \"1234567890\"\n}"
+        },
+        "url": "{{base_url}}/auth/register/"
+      }
+    },
+
+    {
+      "name": "Customer Login",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"customer123\"\n}"
+        },
+        "url": "{{base_url}}/auth/login/"
+      }
+    },
+
+    {
+      "name": "Register Admin",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"admin\",\n  \"email\": \"admin@milkman.com\",\n  \"password\": \"admin123456\",\n  \"password_confirm\": \"admin123456\",\n  \"phone_number\": \"9876543210\"\n}"
+        },
+        "url": "{{base_url}}/auth/register/"
+      }
+    },
+
+    {
+      "name": "Admin Login",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@milkman.com\",\n  \"password\": \"admin123456\"\n}"
+        },
+        "url": "{{base_url}}/auth/login/"
+      }
+    },
+
+    {
+      "name": "Create Category (Admin)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Milk Products\",\n  \"description\": \"Fresh milk and dairy products\"\n}"
+        },
+        "url": "{{base_url}}/categories/"
+      }
+    },
+
+    {
+      "name": "Create Product (Admin)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Fresh Cow Milk\",\n  \"category\": {{category_id}},\n  \"description\": \"Pure and fresh cow milk delivered daily\",\n  \"one_time_price\": \"50.00\",\n  \"monthly_price\": \"1400.00\",\n  \"quarterly_price\": \"4200.00\",\n  \"yearly_price\": \"16800.00\",\n  \"stock_quantity\": 100\n}"
+        },
+        "url": "{{base_url}}/products/"
+      }
+    },
+
+    {
+      "name": "Add Address (Customer)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{customer_token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"address_line\": \"123 Main Street\",\n  \"city\": \"Mumbai\",\n  \"state\": \"Maharashtra\",\n  \"pincode\": \"400001\",\n  \"is_default\": true\n}"
+        },
+        "url": "{{base_url}}/addresses/create/"
+      }
+    },
+
+    {
+      "name": "Add To Cart",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{customer_token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"product_id\": {{product_id}},\n  \"quantity\": 2,\n  \"plan_type\": \"monthly\"\n}"
+        },
+        "url": "{{base_url}}/cart/add/"
+      }
+    },
+
+    {
+      "name": "Create Order",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{customer_token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"shipping_address\": \"123 Main Street, Mumbai - 400001\"\n}"
+        },
+        "url": "{{base_url}}/orders/create/"
+      }
+    },
+
+    {
+      "name": "Create Payment",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{customer_token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"order_id\": {{order_id}},\n  \"payment_method\": \"credit_card\"\n}"
+        },
+        "url": "{{base_url}}/payments/create/"
+      }
+    },
+
+    {
+      "name": "Admin - List All Orders",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+        ],
+        "url": "{{base_url}}/orders/admin/all/"
+      }
+    }
+
+  ]
+}

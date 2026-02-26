@@ -1,0 +1,448 @@
+🏗 1️⃣ FINAL DATABASE DESIGN (PRODUCTION READY)
+🔐 1. USER TABLE (Custom User Model)
+
+We extend AbstractUser.
+
+Table: users
+Field	Type	Purpose
+id	PK	User ID
+username	CharField	Login
+email	EmailField	Unique
+password	Hashed	Secure
+phone_number	CharField	Customer contact
+role	ChoiceField	admin / customer
+is_active	Boolean	Soft delete
+date_joined	DateTime	Auto
+Why?
+
+One table for admin + customer
+
+Role-based permissions
+
+JWT integration ready
+
+📂 2. CATEGORY TABLE
+Table: categories
+Field	Type
+id	PK
+name	CharField
+description	TextField
+is_active	Boolean
+created_at	DateTime
+updated_at	DateTime
+
+Relationship:
+
+Category → One-to-Many → Product
+🥛 3. PRODUCT TABLE
+Table: products
+Field	Type
+id	PK
+name	CharField
+category	FK(Category)
+description	TextField
+image	ImageField
+one_time_price	Decimal
+monthly_price	Decimal
+quarterly_price	Decimal
+yearly_price	Decimal
+stock_quantity	Integer
+is_active	Boolean
+created_at	DateTime
+updated_at	DateTime
+
+Relationship:
+
+Product → belongs to Category
+Product → used in CartItem
+Product → used in OrderItem
+🛒 4. CART TABLE
+Table: carts
+Field	Type
+id	PK
+user	FK(User)
+created_at	DateTime
+updated_at	DateTime
+
+One active cart per user.
+
+🛒 5. CART ITEM TABLE
+Table: cart_items
+Field	Type
+id	PK
+cart	FK(Cart)
+product	FK(Product)
+quantity	Integer
+plan_type	ChoiceField (one_time, monthly, quarterly, yearly)
+price_at_time	Decimal
+created_at	DateTime
+
+Why store price_at_time?
+→ If product price changes tomorrow, cart still has old price.
+
+📦 6. ORDER TABLE
+Table: orders
+Field	Type
+id	PK
+user	FK(User)
+total_amount	Decimal
+status	ChoiceField
+payment_status	ChoiceField
+shipping_address	TextField
+created_at	DateTime
+updated_at	DateTime
+
+Order Status:
+
+pending
+
+confirmed
+
+shipped
+
+delivered
+
+cancelled
+
+Payment Status:
+
+unpaid
+
+paid
+
+failed
+
+📦 7. ORDER ITEM TABLE
+Table: order_items
+Field	Type
+id	PK
+order	FK(Order)
+product	FK(Product)
+quantity	Integer
+plan_type	ChoiceField
+price_at_purchase	Decimal
+
+Cart → Converts → Order + OrderItems
+
+💳 8. PAYMENT TABLE
+Table: payments
+Field	Type
+id	PK
+order	FK(Order)
+payment_method	CharField
+transaction_id	CharField
+amount	Decimal
+status	ChoiceField
+paid_at	DateTime
+🏠 9. ADDRESS TABLE (Optional but Recommended)
+
+If user has multiple addresses:
+
+Table: addresses
+Field	Type
+id	PK
+user	FK(User)
+address_line	Text
+city	CharField
+state	CharField
+pincode	CharField
+is_default	Boolean
+🔄 COMPLETE DATA FLOW
+🟢 1. User Registration
+
+User → Register → JWT Token issued
+
+🟢 2. Browse Products
+
+User:
+
+GET /products
+
+Pagination applied
+
+Filtering by category
+
+Search by name
+
+🟢 3. Add to Cart
+
+User:
+POST /cart/add/
+
+Creates:
+
+Cart (if not exists)
+
+CartItem
+
+🟢 4. Checkout
+
+User:
+POST /orders/create/
+
+Flow:
+
+Read cart items
+
+Calculate total
+
+Create Order
+
+Create OrderItems
+
+Clear cart
+
+🟢 5. Payment
+
+User:
+POST /payment/
+
+Payment created
+
+If success → order.payment_status = paid
+
+🔍 PAGINATION (DRF)
+
+In settings.py:
+
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
+}
+
+Example:
+
+GET /products/?page=2
+🔎 FILTERING
+
+Install:
+
+pip install django-filter
+
+settings.py:
+
+"DEFAULT_FILTER_BACKENDS": [
+    "django_filters.rest_framework.DjangoFilterBackend",
+    "rest_framework.filters.SearchFilter",
+    "rest_framework.filters.OrderingFilter",
+]
+
+Example:
+
+GET /products/?category=1
+GET /products/?ordering=price
+🔍 SEARCH
+
+In ProductViewSet:
+
+search_fields = ['name', 'description']
+
+Example:
+
+GET /products/?search=milk
+🔐 JWT AUTHENTICATION
+
+Install:
+
+pip install djangorestframework-simplejwt
+
+settings.py:
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    )
+}
+
+URLs:
+
+/api/token/
+/api/token/refresh/
+🖼 MEDIA FILE HANDLING
+
+settings.py:
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+urls.py:
+
+from django.conf import settings
+from django.conf.urls.static import static
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+In Product model:
+
+image = models.ImageField(upload_to='products/')
+🌍 CORS CONFIGURATION
+
+Install:
+
+pip install django-cors-headers
+
+settings.py:
+
+INSTALLED_APPS = [
+    "corsheaders",
+]
+
+MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
+]
+
+CORS_ALLOW_ALL_ORIGINS = True
+
+Later for production:
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+]
+🔒 PERMISSIONS
+
+Admin-only APIs:
+
+permission_classes = [IsAdminUser]
+
+Customer APIs:
+
+permission_classes = [IsAuthenticated]
+📊 FINAL RELATIONSHIP DIAGRAM (Text Form)
+User
+ ├── Cart
+ │     └── CartItem → Product
+ │
+ ├── Order
+ │     └── OrderItem → Product
+ │
+ ├── Address
+ │
+Category
+ └── Product
+
+
+--------------------------------------------------------------------------------------
+🔐 1️⃣ AUTHENTICATION APIs (JWT)
+📌 Base: /api/auth/
+Method	Endpoint	Description	Access
+POST	/auth/register/	Register customer	Public
+POST	/auth/login/	Get JWT access + refresh token	Public
+POST	/auth/token/refresh/	Refresh token	Public
+GET	/auth/profile/	Get logged-in user profile	Authenticated
+PUT	/auth/profile/update/	Update profile	Authenticated
+👤 2️⃣ USER MANAGEMENT (Admin Only)
+📌 Base: /api/users/
+Method	Endpoint	Description	Access
+GET	/users/	List all customers	Admin
+GET	/users/{id}/	Get customer detail	Admin
+PATCH	/users/{id}/deactivate/	Soft delete user	Admin
+📂 3️⃣ CATEGORY APIs
+📌 Base: /api/categories/
+Method	Endpoint	Description	Access
+GET	/categories/	List categories	Public
+GET	/categories/{id}/	Get category detail	Public
+POST	/categories/	Create category	Admin
+PUT	/categories/{id}/	Update category	Admin
+DELETE	/categories/{id}/	Delete category	Admin
+🥛 4️⃣ PRODUCT APIs
+📌 Base: /api/products/
+Method	Endpoint	Description	Access
+GET	/products/	List products (Paginated)	Public
+GET	/products/{id}/	Product detail	Public
+POST	/products/	Create product	Admin
+PUT	/products/{id}/	Update product	Admin
+DELETE	/products/{id}/	Delete product	Admin
+🔍 Filtering / Search / Ordering
+Examples:
+GET /api/products/?category=1
+GET /api/products/?search=milk
+GET /api/products/?ordering=one_time_price
+GET /api/products/?ordering=-one_time_price
+GET /api/products/?page=2
+🛒 5️⃣ CART APIs
+📌 Base: /api/cart/
+Method	Endpoint	Description	Access
+GET	/cart/	View my cart	Authenticated
+POST	/cart/add/	Add product to cart	Authenticated
+PATCH	/cart/update/{item_id}/	Update quantity	Authenticated
+DELETE	/cart/remove/{item_id}/	Remove item	Authenticated
+DELETE	/cart/clear/	Clear cart	Authenticated
+📦 6️⃣ ORDER APIs
+📌 Base: /api/orders/
+Method	Endpoint	Description	Access
+POST	/orders/create/	Convert cart to order	Authenticated
+GET	/orders/	List my orders	Authenticated
+GET	/orders/{id}/	Order detail	Authenticated
+GET	/orders/admin/all/	List all orders	Admin
+PATCH	/orders/{id}/update-status/	Update order status	Admin
+💳 7️⃣ PAYMENT APIs
+📌 Base: /api/payments/
+Method	Endpoint	Description	Access
+POST	/payments/create/	Create payment	Authenticated
+POST	/payments/verify/	Verify payment	Authenticated
+GET	/payments/{order_id}/	Payment detail	Authenticated
+GET	/payments/admin/all/	All payments	Admin
+🏠 8️⃣ ADDRESS APIs (Optional but Recommended)
+📌 Base: /api/addresses/
+Method	Endpoint	Description	Access
+GET	/addresses/	List my addresses	Authenticated
+POST	/addresses/	Add address	Authenticated
+PUT	/addresses/{id}/	Update address	Authenticated
+DELETE	/addresses/{id}/	Delete address	Authenticated
+📄 9️⃣ BILL / RECEIPT API
+
+You don’t need separate Bill table.
+
+📌 Endpoint:
+Method	Endpoint	Description
+GET	/orders/{id}/receipt/	Download receipt PDF
+🛠 1️⃣0️⃣ ADMIN DASHBOARD APIs (Optional Advanced)
+📌 Base: /api/admin/dashboard/
+Method	Endpoint	Description
+GET	/admin/dashboard/stats/	Total users, orders, revenue
+GET	/admin/dashboard/sales/	Monthly sales data
+🔐 AUTHORIZATION MATRIX
+Feature	Public	Customer	Admin
+View products	✅	✅	✅
+Add to cart	❌	✅	❌
+Create product	❌	❌	✅
+Update order status	❌	❌	✅
+View own orders	❌	✅	❌
+View all orders	❌	❌	✅
+🧠 COMPLETE FLOW USING APIs
+🟢 Step 1: Register
+POST /api/auth/register/
+🟢 Step 2: Login
+POST /api/auth/login/
+
+Receive:
+
+{
+  "access": "JWT_ACCESS_TOKEN",
+  "refresh": "JWT_REFRESH_TOKEN"
+}
+🟢 Step 3: Add Product to Cart
+POST /api/cart/add/
+🟢 Step 4: Create Order
+POST /api/orders/create/
+🟢 Step 5: Make Payment
+POST /api/payments/create/
+🟢 Step 6: Download Receipt
+GET /api/orders/12/receipt/
+📊 Pagination Format Response Example
+{
+  "count": 150,
+  "next": "http://127.0.0.1:8000/api/products/?page=2",
+  "previous": null,
+  "results": [...]
+}
+🏗 Suggested Project Structure
+api/
+ ├── accounts/
+ ├── products/
+ ├── cart/
+ ├── orders/
+ ├── payments/
+ ├── addresses/
+ └── core/
+

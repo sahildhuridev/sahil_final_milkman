@@ -1,0 +1,480 @@
+{
+  "base_url": "http://localhost:8000/api",
+  "test_data": {
+    "admin_user": {
+      "username": "admin",
+      "email": "admin@milkman.com",
+      "password": "admin123456",
+      "phone_number": "9876543210"
+    },
+    "customer_user": {
+      "username": "john_doe",
+      "email": "john@example.com",
+      "password": "customer123",
+      "phone_number": "1234567890"
+    },
+    "sample_category": {
+      "name": "Milk Products",
+      "description": "Fresh milk and dairy products"
+    },
+    "sample_product": {
+      "name": "Fresh Cow Milk",
+      "description": "Pure and fresh cow milk delivered daily",
+      "one_time_price": "50.00",
+      "monthly_price": "1400.00",
+      "quarterly_price": "4200.00",
+      "yearly_price": "16800.00",
+      "stock_quantity": 100
+    },
+    "sample_address": {
+      "address_line": "123, Main Street, Apartment 4B",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "pincode": "400001",
+      "is_default": true
+    }
+  },
+  "test_endpoints": [
+    {
+      "name": "User Registration",
+      "method": "POST",
+      "endpoint": "/auth/register/",
+      "description": "Register a new customer user",
+      "body": {
+        "username": "{{customer_user.username}}",
+        "email": "{{customer_user.email}}",
+        "password": "{{customer_user.password}}",
+        "password_confirm": "{{customer_user.password}}",
+        "phone_number": "{{customer_user.phone_number}}"
+      },
+      "expected_status": 201,
+      "save_response": {
+        "customer_token": "access",
+        "customer_refresh": "refresh",
+        "customer_user_id": "user.id"
+      }
+    },
+    {
+      "name": "Admin Registration",
+      "method": "POST",
+      "endpoint": "/auth/register/",
+      "description": "Register an admin user",
+      "body": {
+        "username": "{{admin_user.username}}",
+        "email": "{{admin_user.email}}",
+        "password": "{{admin_user.password}}",
+        "password_confirm": "{{admin_user.password}}",
+        "phone_number": "{{admin_user.phone_number}}"
+      },
+      "expected_status": 201,
+      "save_response": {
+        "admin_token": "access",
+        "admin_refresh": "refresh",
+        "admin_user_id": "user.id"
+      }
+    },
+    {
+      "name": "User Login",
+      "method": "POST",
+      "endpoint": "/auth/login/",
+      "description": "Login as customer user",
+      "body": {
+        "email": "{{customer_user.email}}",
+        "password": "{{customer_user.password}}"
+      },
+      "expected_status": 200,
+      "headers": {},
+      "save_response": {
+        "customer_token": "access",
+        "customer_refresh": "refresh"
+      }
+    },
+    {
+      "name": "Admin Login",
+      "method": "POST",
+      "endpoint": "/auth/login/",
+      "description": "Login as admin user",
+      "body": {
+        "email": "{{admin_user.email}}",
+        "password": "{{admin_user.password}}"
+      },
+      "expected_status": 200,
+      "save_response": {
+        "admin_token": "access",
+        "admin_refresh": "refresh"
+      }
+    },
+    {
+      "name": "Get User Profile",
+      "method": "GET",
+      "endpoint": "/auth/profile/",
+      "description": "Get customer user profile",
+      "headers": {
+        "Authorization": "Bearer {{customer_token}}"
+      },
+      "expected_status": 200
+    },
+    {
+      "name": "Create Category (Admin)",
+      "method": "POST",
+      "endpoint": "/categories/",
+      "description": "Create a new product category",
+      "headers": {
+        "Authorization": "Bearer {{admin_token}}"
+      },
+      "body": "{{sample_category}}",
+      "expected_status": 201,
+      "save_response": {
+        "category_id": "id"
+      }
+    },
+    {
+      "name": "List Categories",
+      "method": "GET",
+      "endpoint": "/categories/",
+      "description": "List all categories",
+      "expected_status": 200
+    },
+    {
+      "name": "Get Category Details",
+      "method": "GET",
+      "endpoint": "/categories/{{category_id}}/",
+      "description": "Get specific category details",
+      "expected_status": 200
+    },
+    {
+      "name": "Create Product (Admin)",
+      "method": "POST",
+      "endpoint": "/products/",
+      "description": "Create a new product",
+      "headers": {
+        "Authorization": "Bearer {{admin_token}}"
+      },
+      "body": {
+        "name": "{{sample_product.name}}",
+        "category": "{{category_id}}",
+        "description": "{{sample_product.description}}",
+        "one_time_price": "{{sample_product.one_time_price}}",
+        "monthly_price": "{{sample_product.monthly_price}}",
+        "quarterly_price": "{{sample_product.quarterly_price}}",
+        "yearly_price": "{{sample_product.yearly_price}}",
+        "stock_quantity": "{{sample_product.stock_quantity}}"
+      },
+      "expected_status": 201,
+      "save_response": {
+        "product_id": "id"
+      }
+    },
+    {
+      "name": "List Products",
+      "method": "GET",
+      "endpoint": "/products/",
+      "description": "List all products",
+      "expected_status": 200
+    },
+    {
+      "name": "Get Product Details",
+      "method": "GET",
+      "endpoint": "/products/{{product_id}}/",
+      "description": "Get specific product details",
+      "expected_status": 200
+    },
+    {
+      "name": "Search Products",
+      "method": "GET",
+      "endpoint": "/products/?search=milk",
+      "description": "Search products by name",
+      "expected_status": 200
+    },
+    {
+      "name": "Filter Products by Category",
+      "method": "GET",
+      "endpoint": "/products/?category={{category_id}}",
+      "description": "Filter products by category",
+      "expected_status": 200
+    },
+    {
+      "name": "Add Address",
+      "method": "POST",
+      "endpoint": "/addresses/create/",
+      "description": "Add a new address",
+      "headers": {
+        "Authorization": "Bearer {{customer_token}}"
+      },
+      "body": "{{sample_address}}",
+      "expected_status": 201,
+      "save_response": {
+        "address_id": "id"
+      }
+    },
+    {
+      "name": "List Addresses",
+      "method": "GET",
+      "endpoint": "/addresses/",
+      "description": "List user addresses",
+      "headers": {
+        "Authorization": "Bearer {{customer_token}}"
+      },
+      "expected_status": 200
+    },
+    {
+      "name": "Add to Cart",
+      "method": "POST",
+      "endpoint": "/cart/add/",
+      "description": "Add product to cart",
+      "headers": {
+        "Authorization": "Bearer {{customer_token}}"
+      },
+      "body": {
+        "product_id": "{{product_id}}",
+        "quantity": 2,
+        "plan_type": "monthly"
+      },
+      "expected_status": 200
+    },
+    {
+      "name": "View Cart",
+      "method": "GET",
+      "endpoint": "/cart/",
+      "description": "View user cart",
+      "headers": {
+        "Authorization": "Bearer {{customer_token}}"
+      },
+      "expected_status": 200,
+      "save_response": {
+        "cart_item_id": "items.0.id"
+      }
+    },
+    {
+      "name": "Update Cart Item",
+      "method": "PATCH",
+      "endpoint": "/cart/update/{{cart_item_id}}/",
+      "description": "Update cart item quantity",
+      "headers": {
+        "Authorization": "Bearer {{customer_token}}"
+      },
+      "body": {
+        "quantity": 3
+      },
+      "expected_status": 200
+    },
+    {
+      "name": "Create Order",
+      "method": "POST",
+      "endpoint": "/orders/create/",
+      "description": "Create order from cart",
+      "headers": {
+        "Authorization": "Bearer {{customer_token}}"
+      },
+      "body": {
+        "shipping_address": "{{sample_address.address_line}}, {{sample_address.city}}, {{sample_address.state}} - {{sample_address.pincode}}"
+      },
+      "expected_status": 201,
+      "save_response": {
+        "order_id": "id"
+      }
+    },
+    {
+      "name": "List Orders",
+      "method": "GET",
+      "endpoint": "/orders/",
+      "description": "List user orders",
+      "headers": {
+        "Authorization": "Bearer {{customer_token}}"
+      },
+      "expected_status": 200
+    },
+    {
+      "name": "Get Order Details",
+      "method": "GET",
+      "endpoint": "/orders/{{order_id}}/",
+      "description": "Get specific order details",
+      "headers": {
+        "Authorization": "Bearer {{customer_token}}"
+      },
+      "expected_status": 200
+    },
+    {
+      "name": "Create Payment",
+      "method": "POST",
+      "endpoint": "/payments/create/",
+      "description": "Create payment for order",
+      "headers": {
+        "Authorization": "Bearer {{customer_token}}"
+      },
+      "body": {
+        "order_id": "{{order_id}}",
+        "payment_method": "credit_card"
+      },
+      "expected_status": 201,
+      "save_response": {
+        "payment_id": "id",
+        "transaction_id": "transaction_id"
+      }
+    },
+    {
+      "name": "Verify Payment",
+      "method": "POST",
+      "endpoint": "/payments/verify/",
+      "description": "Verify payment",
+      "headers": {
+        "Authorization": "Bearer {{customer_token}}"
+      },
+      "body": {
+        "payment_id": "{{payment_id}}",
+        "transaction_id": "{{transaction_id}}"
+      },
+      "expected_status": 200
+    },
+    {
+      "name": "Get Payment Details",
+      "method": "GET",
+      "endpoint": "/payments/{{order_id}}/",
+      "description": "Get payment details for order",
+      "headers": {
+        "Authorization": "Bearer {{customer_token}}"
+      },
+      "expected_status": 200
+    },
+    {
+      "name": "List All Users (Admin)",
+      "method": "GET",
+      "endpoint": "/auth/users/",
+      "description": "List all customers (Admin only)",
+      "headers": {
+        "Authorization": "Bearer {{admin_token}}"
+      },
+      "expected_status": 200
+    },
+    {
+      "name": "List All Orders (Admin)",
+      "method": "GET",
+      "endpoint": "/orders/admin/all/",
+      "description": "List all orders (Admin only)",
+      "headers": {
+        "Authorization": "Bearer {{admin_token}}"
+      },
+      "expected_status": 200
+    },
+    {
+      "name": "Update Order Status (Admin)",
+      "method": "PATCH",
+      "endpoint": "/orders/{{order_id}}/update-status/",
+      "description": "Update order status (Admin only)",
+      "headers": {
+        "Authorization": "Bearer {{admin_token}}"
+      },
+      "body": {
+        "status": "confirmed"
+      },
+      "expected_status": 200
+    },
+    {
+      "name": "List All Payments (Admin)",
+      "method": "GET",
+      "endpoint": "/payments/admin/all/",
+      "description": "List all payments (Admin only)",
+      "headers": {
+        "Authorization": "Bearer {{admin_token}}"
+      },
+      "expected_status": 200
+    },
+    {
+      "name": "Update Product (Admin)",
+      "method": "PUT",
+      "endpoint": "/products/{{product_id}}/",
+      "description": "Update product details (Admin only)",
+      "headers": {
+        "Authorization": "Bearer {{admin_token}}"
+      },
+      "body": {
+        "name": "{{sample_product.name}} - Updated",
+        "category": "{{category_id}}",
+        "description": "{{sample_product.description}} - Updated description",
+        "one_time_price": "{{sample_product.one_time_price}}",
+        "monthly_price": "{{sample_product.monthly_price}}",
+        "quarterly_price": "{{sample_product.quarterly_price}}",
+        "yearly_price": "{{sample_product.yearly_price}}",
+        "stock_quantity": 150,
+        "is_active": true
+      },
+      "expected_status": 200
+    },
+    {
+      "name": "Token Refresh",
+      "method": "POST",
+      "endpoint": "/auth/token/refresh/",
+      "description": "Refresh JWT token",
+      "body": {
+        "refresh": "{{customer_refresh}}"
+      },
+      "expected_status": 200
+    },
+    {
+      "name": "Update User Profile",
+      "method": "PUT",
+      "endpoint": "/auth/profile/update/",
+      "description": "Update user profile",
+      "headers": {
+        "Authorization": "Bearer {{customer_token}}"
+      },
+      "body": {
+        "username": "john_doe_updated",
+        "phone_number": "9999999999"
+      },
+      "expected_status": 200
+    },
+    {
+      "name": "Clear Cart",
+      "method": "DELETE",
+      "endpoint": "/cart/clear/",
+      "description": "Clear user cart",
+      "headers": {
+        "Authorization": "Bearer {{customer_token}}"
+      },
+      "expected_status": 200
+    }
+  ],
+  "usage_instructions": {
+    "description": "This JSON file contains comprehensive test cases for all API endpoints in the milk delivery service backend.",
+    "how_to_use": [
+      "1. Start the Django development server: python manage.py runserver",
+      "2. Use a REST client like Postman, Insomnia, or curl to test the endpoints",
+      "3. Replace template variables ({{variable_name}}) with actual values from previous responses",
+      "4. Follow the test sequence as endpoints depend on each other",
+      "5. Check expected_status codes to verify successful responses"
+    ],
+    "template_variables": {
+      "customer_token": "JWT access token for customer user",
+      "admin_token": "JWT access token for admin user",
+      "customer_refresh": "JWT refresh token for customer user",
+      "admin_refresh": "JWT refresh token for admin user",
+      "category_id": "ID of created category",
+      "product_id": "ID of created product",
+      "order_id": "ID of created order",
+      "payment_id": "ID of created payment",
+      "address_id": "ID of created address",
+      "cart_item_id": "ID of cart item"
+    },
+    "test_sequence": [
+      "Register users (customer and admin)",
+      "Login to get tokens",
+      "Create category (admin)",
+      "Create product (admin)",
+      "Add address (customer)",
+      "Add to cart (customer)",
+      "Create order (customer)",
+      "Create and verify payment (customer)",
+      "Test admin endpoints",
+      "Test update operations"
+    ]
+  },
+  "curl_examples": {
+    "register_user": "curl -X POST http://localhost:8000/api/auth/register/ -H \"Content-Type: application/json\" -d '{\"username\":\"john_doe\",\"email\":\"john@example.com\",\"password\":\"customer123\",\"password_confirm\":\"customer123\",\"phone_number\":\"1234567890\"}'",
+    "login": "curl -X POST http://localhost:8000/api/auth/login/ -H \"Content-Type: application/json\" -d '{\"email\":\"john@example.com\",\"password\":\"customer123\"}'",
+    "create_category": "curl -X POST http://localhost:8000/api/categories/ -H \"Authorization: Bearer YOUR_ADMIN_TOKEN\" -H \"Content-Type: application/json\" -d '{\"name\":\"Milk Products\",\"description\":\"Fresh milk and dairy products\"}'",
+    "create_product": "curl -X POST http://localhost:8000/api/products/ -H \"Authorization: Bearer YOUR_ADMIN_TOKEN\" -H \"Content-Type: application/json\" -d '{\"name\":\"Fresh Cow Milk\",\"category\":1,\"description\":\"Pure and fresh cow milk\",\"one_time_price\":\"50.00\",\"monthly_price\":\"1400.00\",\"quarterly_price\":\"4200.00\",\"yearly_price\":\"16800.00\",\"stock_quantity\":100}'",
+    "add_to_cart": "curl -X POST http://localhost:8000/api/cart/add/ -H \"Authorization: Bearer YOUR_CUSTOMER_TOKEN\" -H \"Content-Type: application/json\" -d '{\"product_id\":1,\"quantity\":2,\"plan_type\":\"monthly\"}'",
+    "create_order": "curl -X POST http://localhost:8000/api/orders/create/ -H \"Authorization: Bearer YOUR_CUSTOMER_TOKEN\" -H \"Content-Type: application/json\" -d '{\"shipping_address\":\"123, Main Street, Mumbai - 400001\"}'"
+  }
+}
