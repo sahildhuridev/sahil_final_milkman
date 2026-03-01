@@ -19,7 +19,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
         return super().get_permissions()
     
     def get_queryset(self):
-        if self.request.user.is_authenticated and self.request.user.is_admin:
+        if self.request.user.is_authenticated and (self.request.user.is_staff or self.request.user.is_superuser):
             return Category.objects.all()
         return Category.objects.filter(is_active=True)
 
@@ -41,8 +41,11 @@ class ProductViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         queryset = Product.objects.select_related('category')
-        
-        if not (self.request.user and self.request.user.is_admin):
+
+        if not (
+            self.request.user.is_authenticated
+            and (self.request.user.is_staff or self.request.user.is_superuser)
+        ):
             queryset = queryset.filter(is_active=True)
         
         category_id = self.request.query_params.get('category')
@@ -55,6 +58,11 @@ class ProductViewSet(viewsets.ModelViewSet):
         if self.action == 'list':
             return ProductListSerializer
         return ProductSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
     
     @action(detail=False, methods=['get'])
     def featured(self, request):

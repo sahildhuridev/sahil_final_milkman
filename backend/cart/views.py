@@ -11,7 +11,7 @@ from products.models import Product
 @permission_classes([permissions.IsAuthenticated])
 def view_cart(request):
     cart, created = Cart.objects.get_or_create(user=request.user)
-    serializer = CartSerializer(cart)
+    serializer = CartSerializer(cart, context={'request': request})
     return Response(serializer.data)
 
 
@@ -53,7 +53,7 @@ def add_to_cart(request):
         cart_item.quantity = new_quantity
         cart_item.save()
     
-    serializer = CartSerializer(cart)
+    serializer = CartSerializer(cart, context={'request': request})
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -84,7 +84,7 @@ def update_cart_item(request, item_id):
         except ValueError:
             return Response({'error': 'Invalid quantity'}, status=status.HTTP_400_BAD_REQUEST)
     
-    serializer = CartItemSerializer(cart_item)
+    serializer = CartItemSerializer(cart_item, context={'request': request})
     return Response(serializer.data)
 
 

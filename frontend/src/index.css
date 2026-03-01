@@ -1,0 +1,119 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+    --gradient-start: #e0f2fe;
+    --gradient-mid: #f0f9ff;
+    --gradient-end: #faf5ff;
+    --header-bg: #0891b2;
+    --header-border: #0e7490;
+  }
+
+  body {
+    @apply antialiased;
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end));
+    background-size: 400% 400%;
+    animation: gradientShift 20s ease infinite;
+    min-height: 100vh;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+      radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 40% 20%, rgba(6, 182, 212, 0.04) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .content-wrapper {
+    position: relative;
+    z-index: 2;
+  }
+}
+
+@layer components {
+  .container-app {
+    @apply mx-auto w-full max-w-6xl px-4;
+  }
+
+  .card {
+    @apply rounded-2xl border border-white/30 bg-white/60 backdrop-blur-md shadow-lg;
+  }
+
+  .card-header {
+    @apply border-b border-white/20 px-5 py-4;
+  }
+
+  .card-body {
+    @apply px-5 py-5 text-slate-800;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200;
+  }
+
+  .btn-primary {
+    @apply btn bg-white text-cyan-600 shadow-lg hover:shadow-xl hover:scale-105;
+  }
+
+  .btn-secondary {
+    @apply btn bg-white/80 text-slate-700 backdrop-blur-md ring-1 ring-inset ring-slate-300 hover:bg-white hover:shadow-md;
+  }
+
+  .btn-danger {
+    @apply btn bg-rose-500 text-white hover:bg-rose-600 hover:shadow-lg;
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 backdrop-blur-md shadow-sm outline-none transition focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100;
+  }
+
+  .select {
+    @apply input bg-white/80 text-slate-800;
+  }
+
+  .textarea {
+    @apply input;
+  }
+
+  .header-footer {
+    background: var(--header-bg);
+    border-bottom: 1px solid var(--header-border);
+    backdrop-filter: blur(12px);
+    background: rgba(8, 145, 178, 0.9);
+  }
+
+  .text-on-dark {
+    @apply text-white;
+  }
+
+  .text-on-dark-secondary {
+    @apply text-cyan-100;
+  }
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}

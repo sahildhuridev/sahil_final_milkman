@@ -23,3 +23,4 @@ class CreatePaymentSerializer(serializers.Serializer):
 class VerifyPaymentSerializer(serializers.Serializer):
     payment_id = serializers.IntegerField()
     transaction_id = serializers.CharField(max_length=100)
+    status = serializers.ChoiceField(choices=Payment.PAYMENT_STATUS_CHOICES, required=False)

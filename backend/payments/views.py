@@ -53,15 +53,22 @@ def verify_payment(request):
     
     payment_id = serializer.validated_data['payment_id']
     transaction_id = serializer.validated_data['transaction_id']
+    requested_status = serializer.validated_data.get('status')
     
     try:
         payment = Payment.objects.get(id=payment_id, order__user=request.user)
         
         if payment.status == 'completed':
             return Response({'message': 'Payment already verified'}, status=status.HTTP_200_OK)
+        if payment.status == 'failed':
+            return Response({'message': 'Payment already marked as failed'}, status=status.HTTP_200_OK)
         
         payment.transaction_id = transaction_id
-        payment.mark_as_completed()
+
+        if requested_status == 'failed':
+            payment.mark_as_failed()
+        else:
+            payment.mark_as_completed()
         
         return Response({
             'message': 'Payment verified successfully',
