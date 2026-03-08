@@ -148,3 +148,18 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://127.0.0.1:5173",
 ]
+
+FRONTEND_BASE_URL = config('FRONTEND_BASE_URL', default='http://localhost:5173')
+EMAIL_VERIFICATION_EXPIRY_MINUTES = config('EMAIL_VERIFICATION_EXPIRY_MINUTES', default=30, cast=int)
+PASSWORD_RESET_EXPIRY_MINUTES = config('PASSWORD_RESET_EXPIRY_MINUTES', default=30, cast=int)
+
+# For local development you can keep console backend.
+# To send real mails set EMAIL_BACKEND to:
+# django.core.mail.backends.smtp.EmailBackend
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
+EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='Sahil Milkman <noreply@milkman.local>')

@@ -1,10 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../app/apiClient'
 import { useAppDispatch, useAppSelector } from '../app/hooks'
 import { setSession } from '../features/auth/authSlice'
 import { clearGuestCart } from '../features/cart/cartSlice'
 import PageHeader from '../components/ui/PageHeader'
+
+const VERIFIED_EMAIL_KEY = 'milkman_verified_email'
 
 export default function SignupPage() {
   const navigate = useNavigate()
@@ -17,7 +19,16 @@ export default function SignupPage() {
   const [password, setPassword] = useState('')
   const [password_confirm, setPasswordConfirm] = useState('')
   const [loading, setLoading] = useState(false)
+  const [verifying, setVerifying] = useState(false)
+  const [checkingStatus, setCheckingStatus] = useState(false)
   const [error, setError] = useState('')
+  const [verifyMessage, setVerifyMessage] = useState('')
+  const [isEmailVerified, setIsEmailVerified] = useState(false)
+
+  useEffect(() => {
+    const verifiedEmail = (localStorage.getItem(VERIFIED_EMAIL_KEY) || '').toLowerCase()
+    setIsEmailVerified(Boolean(email && verifiedEmail === email.toLowerCase()))
+  }, [email])
 
   const syncGuestCart = async () => {
     for (const item of guestItems) {
@@ -30,10 +41,65 @@ export default function SignupPage() {
     dispatch(clearGuestCart())
   }
 
+  const requestVerificationEmail = async () => {
+    if (!email) {
+      setError('Please enter your email before requesting verification.')
+      return
+    }
+
+    setVerifying(true)
+    setError('')
+    setVerifyMessage('')
+
+    try {
+      const res = await api.post('/api/auth/verify-email/request/', { email })
+      setVerifyMessage(res.data?.message || 'Verification mail sent. Check your inbox.')
+      setIsEmailVerified(false)
+      localStorage.removeItem(VERIFIED_EMAIL_KEY)
+    } catch (e) {
+      setError(e?.response?.data?.error || 'Failed to send verification email.')
+    } finally {
+      setVerifying(false)
+    }
+  }
+
+  const checkVerificationStatus = async () => {
+    if (!email) return
+
+    setCheckingStatus(true)
+    setError('')
+    setVerifyMessage('')
+
+    try {
+      const res = await api.get('/api/auth/verify-email/status/', {
+        params: { email },
+      })
+
+      if (res.data?.is_verified) {
+        setIsEmailVerified(true)
+        localStorage.setItem(VERIFIED_EMAIL_KEY, email.toLowerCase())
+        setVerifyMessage('Email verified successfully. You can create your account now.')
+      } else {
+        setIsEmailVerified(false)
+        setVerifyMessage('Email is not verified yet. Please click the link in your email first.')
+      }
+    } catch {
+      setError('Failed to check verification status.')
+    } finally {
+      setCheckingStatus(false)
+    }
+  }
+
   const onSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
     setError('')
+
+    if (!isEmailVerified) {
+      setError('Please verify your email before creating your account.')
+      setLoading(false)
+      return
+    }
 
     try {
       const res = await api.post('/api/auth/register/', {
@@ -49,9 +115,10 @@ export default function SignupPage() {
         await syncGuestCart()
       }
 
+      localStorage.removeItem(VERIFIED_EMAIL_KEY)
       navigate('/cart', { replace: true })
-    } catch {
-      setError('Signup failed')
+    } catch (err) {
+      setError(err?.response?.data?.error || 'Signup failed')
     } finally {
       setLoading(false)
     }
@@ -59,7 +126,7 @@ export default function SignupPage() {
 
   return (
     <div className="mx-auto w-full max-w-md space-y-5">
-      <PageHeader eyebrow="Account" title="Create account" subtitle="Register once and manage all your recurring orders." />
+      <PageHeader eyebrow="Account" title="Create account" subtitle="Verify your email first, then complete signup." />
 
       <div className="card">
         <div className="card-body">
@@ -68,10 +135,30 @@ export default function SignupPage() {
               <label className="text-sm font-semibold text-[var(--ink-700)]">Username</label>
               <input value={username} onChange={(e) => setUsername(e.target.value)} required className="input mt-1" />
             </div>
+
             <div>
               <label className="text-sm font-semibold text-[var(--ink-700)]">Email</label>
-              <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required className="input mt-1" />
+              <input
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value)
+                  setVerifyMessage('')
+                }}
+                type="email"
+                required
+                className="input mt-1"
+              />
+              <div className="mt-2 flex flex-wrap gap-2">
+                <button type="button" onClick={requestVerificationEmail} className="btn-secondary" disabled={verifying || !email}>
+                  {verifying ? 'Sending...' : 'Verify Email Address'}
+                </button>
+                <button type="button" onClick={checkVerificationStatus} className="btn-secondary" disabled={checkingStatus || !email}>
+                  {checkingStatus ? 'Checking...' : 'I have verified'}
+                </button>
+              </div>
+              {isEmailVerified ? <p className="mt-1 text-xs font-semibold text-emerald-700">Email verified.</p> : null}
             </div>
+
             <div>
               <label className="text-sm font-semibold text-[var(--ink-700)]">Phone number</label>
               <input value={phone_number} onChange={(e) => setPhoneNumber(e.target.value)} required className="input mt-1" />
@@ -85,9 +172,10 @@ export default function SignupPage() {
               <input value={password_confirm} onChange={(e) => setPasswordConfirm(e.target.value)} type="password" required className="input mt-1" />
             </div>
 
+            {verifyMessage ? <p className="text-sm font-medium text-emerald-700">{verifyMessage}</p> : null}
             {error ? <p className="text-sm font-medium text-rose-600">{error}</p> : null}
 
-            <button disabled={loading} className="btn-primary w-full">
+            <button disabled={loading || !isEmailVerified} className="btn-primary w-full disabled:opacity-60">
               {loading ? 'Creating...' : 'Create Account'}
             </button>
           </form>

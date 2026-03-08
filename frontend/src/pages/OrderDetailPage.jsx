@@ -71,6 +71,25 @@ export default function OrderDetailPage() {
             <p className="mt-1">{order.shipping_address || 'Not available'}</p>
           </div>
 
+          <div className="rounded-2xl border border-[var(--line-200)] p-4">
+            <p className="text-sm font-semibold text-[var(--ink-900)]">Products bought</p>
+            <div className="mt-3 space-y-2">
+              {order.items?.map((item) => (
+                <div key={item.id} className="rounded-xl border border-[var(--line-200)] bg-[var(--surface-0)] p-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-semibold text-[var(--ink-900)]">{item.product?.name}</p>
+                      <p className="text-xs text-[var(--ink-500)]">
+                        Plan: {item.plan_type} | Qty: {item.quantity}
+                      </p>
+                    </div>
+                    <p className="text-sm font-semibold text-[var(--ink-900)]">Rs {item.total_price}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {payment ? (
             <div className="rounded-2xl border border-[var(--line-200)] p-4 text-sm text-[var(--ink-700)]">
               <p className="font-semibold text-[var(--ink-900)]">Payment details</p>

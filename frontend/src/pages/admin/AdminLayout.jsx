@@ -1,10 +1,20 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { useAppDispatch } from '../../app/hooks'
+import { clearSession } from '../../features/auth/authSlice'
 
 export default function AdminLayout() {
+  const navigate = useNavigate()
+  const dispatch = useAppDispatch()
+
   const linkClass = ({ isActive }) =>
     `rounded-xl px-3 py-2 text-sm font-semibold transition-all duration-200 ${
       isActive ? 'bg-emerald-200/25 text-white shadow-sm' : 'text-emerald-50 hover:bg-white/10 hover:text-white'
     }`
+
+  const onLogout = () => {
+    dispatch(clearSession())
+    navigate('/', { replace: true })
+  }
 
   return (
     <div className="content-wrapper min-h-screen flex flex-col">
@@ -24,6 +34,13 @@ export default function AdminLayout() {
               <NavLink to="/admin/orders" className={linkClass}>Orders</NavLink>
               <NavLink to="/admin/payments" className={linkClass}>Payments</NavLink>
               <NavLink to="/admin/customers" className={linkClass}>Customers</NavLink>
+              <button
+                type="button"
+                onClick={onLogout}
+                className="btn-secondary border-white/20 bg-white/10 text-white hover:bg-white/20"
+              >
+                Logout
+              </button>
             </nav>
           </div>
         </div>

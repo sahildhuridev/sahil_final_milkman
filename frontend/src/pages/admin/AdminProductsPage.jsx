@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { api } from '../../app/apiClient'
 
 const empty = {
@@ -19,7 +19,9 @@ export default function AdminProductsPage() {
   const [selected, setSelected] = useState(null)
   const [form, setForm] = useState(empty)
   const [image, setImage] = useState(null)
+  const [search, setSearch] = useState('')
   const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
 
   const load = async () => {
     const [pRes, cRes] = await Promise.all([api.get('/api/products/'), api.get('/api/categories/')])
@@ -30,8 +32,19 @@ export default function AdminProductsPage() {
   }
 
   useEffect(() => {
-    load().catch(() => setError('Failed to load'))
+    load().catch(() => setError('Failed to load products and categories'))
   }, [])
+
+  const filteredProducts = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return products
+    return products.filter(
+      (p) =>
+        p.name?.toLowerCase().includes(q) ||
+        p.category_name?.toLowerCase().includes(q) ||
+        p.description?.toLowerCase().includes(q),
+    )
+  }, [products, search])
 
   const startCreate = () => {
     setSelected(null)
@@ -57,6 +70,8 @@ export default function AdminProductsPage() {
 
   const save = async () => {
     setError('')
+    setSaving(true)
+
     try {
       const fd = new FormData()
       Object.entries(form).forEach(([k, v]) => fd.append(k, v))
@@ -74,8 +89,10 @@ export default function AdminProductsPage() {
 
       await load()
       startCreate()
-    } catch (e) {
+    } catch {
       setError('Failed to save product')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -84,115 +101,143 @@ export default function AdminProductsPage() {
     try {
       await api.delete(`/api/products/${p.id}/`)
       await load()
-    } catch (e) {
+      if (selected?.id === p.id) startCreate()
+    } catch {
       setError('Failed to delete product')
     }
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-      <div className="rounded-xl bg-white p-6 shadow">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-semibold">Products</h1>
-          <button onClick={startCreate} className="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white">
-            New
-          </button>
-        </div>
+    <div className="space-y-5">
+      <div className="card">
+        <div className="card-body space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h1 className="text-xl font-black text-[var(--ink-900)]">Products Management</h1>
+            <button onClick={startCreate} className="btn-primary">
+              New Product
+            </button>
+          </div>
 
-        {error ? <p className="mt-2 text-sm text-red-600">{error}</p> : null}
+          {error ? <p className="text-sm font-medium text-rose-600">{error}</p> : null}
 
-        <div className="mt-4 space-y-2">
-          {products.map((p) => (
-            <div key={p.id} className="flex items-center justify-between rounded-md border p-3">
-              <div>
-                <div className="text-sm font-semibold">{p.name}</div>
-                <div className="text-xs text-gray-600">{p.category_name}</div>
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by product/category/description"
+            className="input"
+          />
+
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            {filteredProducts.map((p) => (
+              <div key={p.id} className="rounded-2xl border border-[var(--line-200)] bg-[var(--surface-0)] p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-bold text-[var(--ink-900)]">{p.name}</p>
+                    <p className="text-xs text-[var(--ink-500)]">{p.category_name}</p>
+                  </div>
+                  <span
+                    className={`rounded-full px-2 py-1 text-xs font-semibold ${
+                      p.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
+                    }`}
+                  >
+                    {p.is_active ? 'Active' : 'Inactive'}
+                  </span>
+                </div>
+
+                <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-[var(--ink-700)]">
+                  <p>One-time: Rs {p.one_time_price}</p>
+                  <p>Monthly: Rs {p.monthly_price}</p>
+                  <p>Quarterly: Rs {p.quarterly_price}</p>
+                  <p>Yearly: Rs {p.yearly_price}</p>
+                </div>
+
+                <p className="mt-2 text-xs text-[var(--ink-500)]">Stock: {p.stock_quantity}</p>
+
+                <div className="mt-3 flex items-center gap-2">
+                  <button onClick={() => startEdit(p)} className="btn-secondary">
+                    Edit
+                  </button>
+                  <button onClick={() => remove(p)} className="btn-danger">
+                    Delete
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <button onClick={() => startEdit(p)} className="text-sm font-medium text-blue-600">
-                  Edit
-                </button>
-                <button onClick={() => remove(p)} className="text-sm font-medium text-red-600">
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="rounded-xl bg-white p-6 shadow">
-        <h2 className="text-lg font-semibold">{selected ? `Edit #${selected.id}` : 'Create product'}</h2>
+      <div className="card">
+        <div className="card-body space-y-3">
+          <h2 className="text-lg font-black text-[var(--ink-900)]">{selected ? `Edit Product #${selected.id}` : 'Create Product'}</h2>
 
-        <div className="mt-4 grid grid-cols-1 gap-3">
-          <input
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            placeholder="Name"
-            className="rounded-md border px-3 py-2 text-sm"
-          />
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <input
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              placeholder="Name"
+              className="input"
+            />
 
-          <select
-            value={form.category}
-            onChange={(e) => setForm({ ...form, category: e.target.value })}
-            className="rounded-md border bg-white px-3 py-2 text-sm"
-          >
-            <option value="">Select category</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+            <select
+              value={form.category}
+              onChange={(e) => setForm({ ...form, category: e.target.value })}
+              className="select"
+            >
+              <option value="">Select category</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
 
-          <textarea
-            value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
-            placeholder="Description"
-            className="rounded-md border px-3 py-2 text-sm"
-            rows={3}
-          />
+            <textarea
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              placeholder="Description"
+              className="textarea md:col-span-2"
+              rows={3}
+            />
 
-          <div className="grid grid-cols-2 gap-3">
             <input
               type="number"
               value={form.one_time_price}
               onChange={(e) => setForm({ ...form, one_time_price: e.target.value })}
               placeholder="One-time price"
-              className="rounded-md border px-3 py-2 text-sm"
+              className="input"
             />
             <input
               type="number"
               value={form.monthly_price}
               onChange={(e) => setForm({ ...form, monthly_price: e.target.value })}
               placeholder="Monthly price"
-              className="rounded-md border px-3 py-2 text-sm"
+              className="input"
             />
             <input
               type="number"
               value={form.quarterly_price}
               onChange={(e) => setForm({ ...form, quarterly_price: e.target.value })}
               placeholder="Quarterly price"
-              className="rounded-md border px-3 py-2 text-sm"
+              className="input"
             />
             <input
               type="number"
               value={form.yearly_price}
               onChange={(e) => setForm({ ...form, yearly_price: e.target.value })}
               placeholder="Yearly price"
-              className="rounded-md border px-3 py-2 text-sm"
+              className="input"
             />
-          </div>
 
-          <div className="grid grid-cols-2 gap-3">
             <input
               type="number"
               value={form.stock_quantity}
               onChange={(e) => setForm({ ...form, stock_quantity: e.target.value })}
               placeholder="Stock quantity"
-              className="rounded-md border px-3 py-2 text-sm"
+              className="input"
             />
-            <label className="flex items-center gap-2 text-sm">
+
+            <label className="flex items-center gap-2 rounded-xl border border-[var(--line-200)] px-3 py-2 text-sm text-[var(--ink-700)]">
               <input
                 type="checkbox"
                 checked={!!form.is_active}
@@ -200,16 +245,12 @@ export default function AdminProductsPage() {
               />
               Active
             </label>
+
+            <input type="file" accept="image/*" onChange={(e) => setImage(e.target.files?.[0] || null)} className="input md:col-span-2" />
           </div>
 
-          <input type="file" accept="image/*" onChange={(e) => setImage(e.target.files?.[0] || null)} />
-
-          <button
-            type="button"
-            onClick={save}
-            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white"
-          >
-            Save
+          <button type="button" onClick={save} disabled={saving} className="btn-primary w-full md:w-auto">
+            {saving ? 'Saving...' : 'Save Product'}
           </button>
         </div>
       </div>

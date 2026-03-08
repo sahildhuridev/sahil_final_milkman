@@ -5,10 +5,14 @@ import HomePage from './pages/HomePage'
 import ProductDetailPage from './pages/ProductDetailPage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
+import VerifyEmailPage from './pages/VerifyEmailPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
 import CartPage from './pages/CartPage'
 import CheckoutPage from './pages/CheckoutPage'
 import OrdersPage from './pages/OrdersPage'
 import OrderDetailPage from './pages/OrderDetailPage'
+import ProfileDashboardPage from './pages/ProfileDashboardPage'
 import NotFoundPage from './pages/NotFoundPage'
 import { RequireAdmin, RequireAuth } from './routes/guards'
 
@@ -28,10 +32,14 @@ export default function App() {
         <Route path="/products" element={<HomePage />} />
         <Route path="/products/:id" element={<ProductDetailPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/cart" element={<CartPage />} />
 
         <Route element={<RequireAuth />}>
+          <Route path="/dashboard/profile" element={<ProfileDashboardPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/dashboard/orders" element={<OrdersPage />} />
           <Route path="/dashboard/orders/:id" element={<OrderDetailPage />} />

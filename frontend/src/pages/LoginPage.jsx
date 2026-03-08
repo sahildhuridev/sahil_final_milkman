@@ -44,7 +44,11 @@ export default function LoginPage() {
       const from = location.state?.from?.pathname
       navigate(from || '/cart', { replace: true })
     } catch (err) {
-      setError(err?.response?.data?.error || 'Login failed')
+      const payload = err?.response?.data
+      const apiMessage =
+        payload?.error ||
+        (Array.isArray(payload?.non_field_errors) ? payload.non_field_errors[0] : null)
+      setError(apiMessage || 'Login failed')
     } finally {
       setLoading(false)
     }
@@ -76,6 +80,11 @@ export default function LoginPage() {
                 required
                 className="input mt-1"
               />
+              <div className="mt-1 text-right">
+                <Link to="/forgot-password" className="text-xs font-semibold text-[var(--brand-600)] hover:text-[var(--brand-500)]">
+                  Forgot password?
+                </Link>
+              </div>
             </div>
 
             {error ? <p className="text-sm font-medium text-rose-600">{error}</p> : null}

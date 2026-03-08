@@ -18,6 +18,7 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [downloadingId, setDownloadingId] = useState(null)
 
   useEffect(() => {
     const run = async () => {
@@ -37,6 +38,29 @@ export default function OrdersPage() {
     run()
   }, [])
 
+  const onDownloadBill = async (orderId) => {
+    setError('')
+    setDownloadingId(orderId)
+    try {
+      const res = await api.get(`/api/orders/${orderId}/invoice/`, {
+        responseType: 'blob',
+      })
+      const blob = new Blob([res.data], { type: 'application/pdf' })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `bill-order-${orderId}.pdf`
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+    } catch {
+      setError('Failed to download bill')
+    } finally {
+      setDownloadingId(null)
+    }
+  }
+
   if (loading) return <LoadingState label="Loading orders..." />
 
   return (
@@ -46,8 +70,8 @@ export default function OrdersPage() {
           <PageHeader
             eyebrow="Dashboard"
             title="My Orders"
-            subtitle="Track order and payment status for every purchase."
-            actions={<Link to="/" className="btn-secondary">Shop More</Link>}
+            subtitle="Track order and payment status with product-level details."
+            actions={<Link to="/products" className="btn-secondary">Shop More</Link>}
           />
 
           {error ? <p className="text-sm font-medium text-rose-600">{error}</p> : null}
@@ -57,10 +81,9 @@ export default function OrdersPage() {
           ) : (
             <div className="space-y-3">
               {orders.map((o) => (
-                <Link
+                <div
                   key={o.id}
-                  to={`/dashboard/orders/${o.id}`}
-                  className="block rounded-2xl border border-[var(--line-200)] bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-sm"
+                  className="rounded-2xl border border-[var(--line-200)] bg-white p-4 transition hover:shadow-sm"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
@@ -72,7 +95,37 @@ export default function OrdersPage() {
                       <StatBadge label="Status" value={o.status} tone={statusTone[o.status] || 'neutral'} />
                     </div>
                   </div>
-                </Link>
+
+                  <div className="mt-3 space-y-2">
+                    {o.items?.map((item) => (
+                      <div key={item.id} className="rounded-xl border border-[var(--line-200)] bg-[var(--surface-0)] p-3">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div>
+                            <p className="text-sm font-semibold text-[var(--ink-900)]">{item.product?.name}</p>
+                            <p className="text-xs text-[var(--ink-500)]">
+                              Plan: {item.plan_type} | Qty: {item.quantity}
+                            </p>
+                          </div>
+                          <p className="text-sm font-semibold text-[var(--ink-900)]">Rs {item.total_price}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap justify-end gap-2">
+                    <button
+                      type="button"
+                      className="btn-primary"
+                      onClick={() => onDownloadBill(o.id)}
+                      disabled={downloadingId === o.id}
+                    >
+                      {downloadingId === o.id ? 'Generating PDF...' : 'Download Bill'}
+                    </button>
+                    <Link to={`/dashboard/orders/${o.id}`} className="btn-secondary">
+                      View Full Details
+                    </Link>
+                  </div>
+                </div>
               ))}
             </div>
           )}

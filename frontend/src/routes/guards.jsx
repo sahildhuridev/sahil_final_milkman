@@ -22,10 +22,11 @@ export function RequireAdmin() {
 
   const role = (user?.role || '').toLowerCase()
   const isAdminRole = role === 'admin' || role === 'staff'
+  const isDjangoAdminFlags = Boolean(user?.is_staff || user?.is_superuser)
   const isKnownSuperuser =
     user?.email === 'sahildhuri216@gmail.com' || user?.username === 'sahildhuri216'
 
-  const isAdmin = isAdminRole || isKnownSuperuser
+  const isAdmin = isAdminRole || isDjangoAdminFlags || isKnownSuperuser
   if (!isAdmin) {
     return <Navigate to="/" replace />
   }

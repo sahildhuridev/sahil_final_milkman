@@ -65,6 +65,9 @@ export default function Navbar() {
 
             {user ? (
               <>
+                <NavLink to="/dashboard/profile" className={linkClass}>
+                  Dashboard
+                </NavLink>
                 <NavLink to="/dashboard/orders" className={linkClass}>
                   Orders
                 </NavLink>
@@ -110,6 +113,9 @@ export default function Navbar() {
             </NavLink>
             {user ? (
               <>
+                <NavLink to="/dashboard/profile" className={mobileLinkClass} onClick={closeMenu}>
+                  Dashboard
+                </NavLink>
                 <NavLink to="/dashboard/orders" className={mobileLinkClass} onClick={closeMenu}>
                   Orders
                 </NavLink>
