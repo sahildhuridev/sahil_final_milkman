@@ -4,6 +4,7 @@ import { api } from '../app/apiClient'
 import { useAppDispatch, useAppSelector } from '../app/hooks'
 import { setSession } from '../features/auth/authSlice'
 import { clearGuestCart } from '../features/cart/cartSlice'
+import PageHeader from '../components/ui/PageHeader'
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -50,46 +51,48 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="mx-auto max-w-md rounded-xl bg-white p-6 shadow">
-      <h1 className="text-xl font-semibold">Login</h1>
-      <form onSubmit={onSubmit} className="mt-4 space-y-3">
-        <div>
-          <label className="text-sm font-medium">Email</label>
-          <input
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            type="email"
-            required
-            className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-          />
+    <div className="mx-auto w-full max-w-md space-y-5">
+      <PageHeader eyebrow="Account" title="Login" subtitle="Access your cart, checkout, and order dashboard." />
+
+      <div className="card">
+        <div className="card-body">
+          <form onSubmit={onSubmit} className="space-y-3">
+            <div>
+              <label className="text-sm font-semibold text-[var(--ink-700)]">Email</label>
+              <input
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                type="email"
+                required
+                className="input mt-1"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-semibold text-[var(--ink-700)]">Password</label>
+              <input
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                type="password"
+                required
+                className="input mt-1"
+              />
+            </div>
+
+            {error ? <p className="text-sm font-medium text-rose-600">{error}</p> : null}
+
+            <button disabled={loading} className="btn-primary w-full">
+              {loading ? 'Logging in...' : 'Login'}
+            </button>
+          </form>
+
+          <p className="mt-4 text-sm text-[var(--ink-500)]">
+            Do not have an account?{' '}
+            <Link to="/signup" className="font-semibold text-[var(--brand-600)] hover:text-[var(--brand-500)]">
+              Signup
+            </Link>
+          </p>
         </div>
-        <div>
-          <label className="text-sm font-medium">Password</label>
-          <input
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            type="password"
-            required
-            className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-          />
-        </div>
-
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
-
-        <button
-          disabled={loading}
-          className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
-        >
-          {loading ? 'Logging in...' : 'Login'}
-        </button>
-      </form>
-
-      <p className="mt-4 text-sm text-gray-600">
-        Don&apos;t have an account?{' '}
-        <Link to="/signup" className="font-medium text-blue-600">
-          Signup
-        </Link>
-      </p>
+      </div>
     </div>
   )
 }

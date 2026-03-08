@@ -4,6 +4,7 @@ import { api } from '../app/apiClient'
 import { useAppDispatch, useAppSelector } from '../app/hooks'
 import { setSession } from '../features/auth/authSlice'
 import { clearGuestCart } from '../features/cart/cartSlice'
+import PageHeader from '../components/ui/PageHeader'
 
 export default function SignupPage() {
   const navigate = useNavigate()
@@ -49,7 +50,7 @@ export default function SignupPage() {
       }
 
       navigate('/cart', { replace: true })
-    } catch (err) {
+    } catch {
       setError('Signup failed')
     } finally {
       setLoading(false)
@@ -57,74 +58,48 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="mx-auto max-w-md rounded-xl bg-white p-6 shadow">
-      <h1 className="text-xl font-semibold">Signup</h1>
-      <form onSubmit={onSubmit} className="mt-4 space-y-3">
-        <div>
-          <label className="text-sm font-medium">Username</label>
-          <input
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-          />
-        </div>
-        <div>
-          <label className="text-sm font-medium">Email</label>
-          <input
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            type="email"
-            required
-            className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-          />
-        </div>
-        <div>
-          <label className="text-sm font-medium">Phone number</label>
-          <input
-            value={phone_number}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-            required
-            className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-          />
-        </div>
-        <div>
-          <label className="text-sm font-medium">Password</label>
-          <input
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            type="password"
-            required
-            className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-          />
-        </div>
-        <div>
-          <label className="text-sm font-medium">Confirm password</label>
-          <input
-            value={password_confirm}
-            onChange={(e) => setPasswordConfirm(e.target.value)}
-            type="password"
-            required
-            className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-          />
-        </div>
+    <div className="mx-auto w-full max-w-md space-y-5">
+      <PageHeader eyebrow="Account" title="Create account" subtitle="Register once and manage all your recurring orders." />
 
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
+      <div className="card">
+        <div className="card-body">
+          <form onSubmit={onSubmit} className="space-y-3">
+            <div>
+              <label className="text-sm font-semibold text-[var(--ink-700)]">Username</label>
+              <input value={username} onChange={(e) => setUsername(e.target.value)} required className="input mt-1" />
+            </div>
+            <div>
+              <label className="text-sm font-semibold text-[var(--ink-700)]">Email</label>
+              <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required className="input mt-1" />
+            </div>
+            <div>
+              <label className="text-sm font-semibold text-[var(--ink-700)]">Phone number</label>
+              <input value={phone_number} onChange={(e) => setPhoneNumber(e.target.value)} required className="input mt-1" />
+            </div>
+            <div>
+              <label className="text-sm font-semibold text-[var(--ink-700)]">Password</label>
+              <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" required className="input mt-1" />
+            </div>
+            <div>
+              <label className="text-sm font-semibold text-[var(--ink-700)]">Confirm password</label>
+              <input value={password_confirm} onChange={(e) => setPasswordConfirm(e.target.value)} type="password" required className="input mt-1" />
+            </div>
 
-        <button
-          disabled={loading}
-          className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
-        >
-          {loading ? 'Creating...' : 'Create account'}
-        </button>
-      </form>
+            {error ? <p className="text-sm font-medium text-rose-600">{error}</p> : null}
 
-      <p className="mt-4 text-sm text-gray-600">
-        Already have an account?{' '}
-        <Link to="/login" className="font-medium text-blue-600">
-          Login
-        </Link>
-      </p>
+            <button disabled={loading} className="btn-primary w-full">
+              {loading ? 'Creating...' : 'Create Account'}
+            </button>
+          </form>
+
+          <p className="mt-4 text-sm text-[var(--ink-500)]">
+            Already have an account?{' '}
+            <Link to="/login" className="font-semibold text-[var(--brand-600)] hover:text-[var(--brand-500)]">
+              Login
+            </Link>
+          </p>
+        </div>
+      </div>
     </div>
   )
 }

@@ -1,6 +1,18 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { api } from '../app/apiClient'
+import PageHeader from '../components/ui/PageHeader'
+import EmptyState from '../components/ui/EmptyState'
+import LoadingState from '../components/ui/LoadingState'
+import StatBadge from '../components/ui/StatBadge'
+
+const statusTone = {
+  pending: 'warning',
+  confirmed: 'neutral',
+  shipped: 'neutral',
+  delivered: 'success',
+  cancelled: 'danger',
+}
 
 export default function OrderDetailPage() {
   const { id } = useParams()
@@ -25,43 +37,49 @@ export default function OrderDetailPage() {
     run()
   }, [id])
 
-  if (loading) return <p className="text-sm text-gray-600">Loading...</p>
+  if (loading) return <LoadingState label="Loading order details..." />
 
   if (!order) {
     return (
-      <div className="rounded-xl bg-white p-6 shadow">
-        <p className="text-sm">Order not found.</p>
-        <Link to="/dashboard/orders" className="mt-3 inline-block text-sm font-medium text-blue-600">
-          Back
-        </Link>
-      </div>
+      <EmptyState
+        title="Order not found"
+        description="This order does not exist or is not accessible."
+        action={<Link to="/dashboard/orders" className="btn-primary">Back to orders</Link>}
+      />
     )
   }
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-xl bg-white p-6 shadow">
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-xl font-semibold">Order #{order.id}</h1>
-            <p className="text-sm text-gray-600">{order.created_at}</p>
+    <div className="space-y-5">
+      <div className="card">
+        <div className="card-body space-y-5">
+          <PageHeader
+            eyebrow="Order Details"
+            title={`Order #${order.id}`}
+            subtitle={order.created_at}
+            actions={<Link to="/dashboard/orders" className="btn-secondary">Back to Orders</Link>}
+          />
+
+          <div className="flex flex-wrap gap-2">
+            <StatBadge label="Amount" value={`Rs ${order.total_amount}`} />
+            <StatBadge label="Status" value={order.status} tone={statusTone[order.status] || 'neutral'} />
+            <StatBadge label="Payment" value={order.payment_status || 'unknown'} />
           </div>
-          <div className="text-right">
-            <p className="text-sm font-semibold">₹{order.total_amount}</p>
-            <p className="text-sm text-gray-600">Status: {order.status}</p>
+
+          <div className="rounded-2xl border border-[var(--line-200)] bg-[var(--surface-0)] p-4 text-sm text-[var(--ink-700)]">
+            <p className="font-semibold text-[var(--ink-900)]">Shipping address</p>
+            <p className="mt-1">{order.shipping_address || 'Not available'}</p>
           </div>
+
+          {payment ? (
+            <div className="rounded-2xl border border-[var(--line-200)] p-4 text-sm text-[var(--ink-700)]">
+              <p className="font-semibold text-[var(--ink-900)]">Payment details</p>
+              <p className="mt-1">Method: {payment.payment_method || 'N/A'}</p>
+              <p>Status: {payment.status || 'unknown'}</p>
+              {payment.transaction_id ? <p>Transaction: {payment.transaction_id}</p> : null}
+            </div>
+          ) : null}
         </div>
-
-        {payment ? (
-          <div className="mt-4 rounded-md border p-4 text-sm">
-            <p className="font-medium">Payment</p>
-            <p className="text-gray-600">Status: {payment.status || 'unknown'}</p>
-          </div>
-        ) : null}
-
-        <Link to="/dashboard/orders" className="mt-4 inline-block text-sm font-medium text-blue-600">
-          Back to orders
-        </Link>
       </div>
     </div>
   )

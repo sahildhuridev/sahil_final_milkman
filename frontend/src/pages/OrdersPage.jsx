@@ -1,6 +1,18 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../app/apiClient'
+import PageHeader from '../components/ui/PageHeader'
+import EmptyState from '../components/ui/EmptyState'
+import LoadingState from '../components/ui/LoadingState'
+import StatBadge from '../components/ui/StatBadge'
+
+const statusTone = {
+  pending: 'warning',
+  confirmed: 'neutral',
+  shipped: 'neutral',
+  delivered: 'success',
+  cancelled: 'danger',
+}
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState([])
@@ -15,7 +27,7 @@ export default function OrdersPage() {
         const res = await api.get('/api/orders/')
         const data = Array.isArray(res.data) ? res.data : res.data?.results || []
         setOrders(data)
-      } catch (e) {
+      } catch {
         setError('Failed to load orders')
       } finally {
         setLoading(false)
@@ -25,29 +37,46 @@ export default function OrdersPage() {
     run()
   }, [])
 
-  if (loading) return <p className="text-sm text-gray-600">Loading...</p>
+  if (loading) return <LoadingState label="Loading orders..." />
 
   return (
-    <div className="rounded-xl bg-white p-6 shadow">
-      <h1 className="text-xl font-semibold">My Orders</h1>
-      {error ? <p className="mt-2 text-sm text-red-600">{error}</p> : null}
+    <div className="space-y-5">
+      <div className="card">
+        <div className="card-body space-y-5">
+          <PageHeader
+            eyebrow="Dashboard"
+            title="My Orders"
+            subtitle="Track order and payment status for every purchase."
+            actions={<Link to="/" className="btn-secondary">Shop More</Link>}
+          />
 
-      <div className="mt-4 space-y-3">
-        {orders.length === 0 ? <p className="text-sm text-gray-700">No orders yet.</p> : null}
-        {orders.map((o) => (
-          <Link key={o.id} to={`/dashboard/orders/${o.id}`} className="block rounded-md border p-4 hover:bg-gray-50">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold">Order #{o.id}</p>
-                <p className="text-xs text-gray-600">{o.created_at}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm font-semibold">₹{o.total_amount}</p>
-                <p className="text-xs text-gray-600">Status: {o.status}</p>
-              </div>
+          {error ? <p className="text-sm font-medium text-rose-600">{error}</p> : null}
+
+          {orders.length === 0 ? (
+            <EmptyState title="No orders yet" description="Place your first order from the product catalog." />
+          ) : (
+            <div className="space-y-3">
+              {orders.map((o) => (
+                <Link
+                  key={o.id}
+                  to={`/dashboard/orders/${o.id}`}
+                  className="block rounded-2xl border border-[var(--line-200)] bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-sm"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-bold text-[var(--ink-900)]">Order #{o.id}</p>
+                      <p className="text-xs text-[var(--ink-500)]">{o.created_at}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <StatBadge label="Amount" value={`Rs ${o.total_amount}`} />
+                      <StatBadge label="Status" value={o.status} tone={statusTone[o.status] || 'neutral'} />
+                    </div>
+                  </div>
+                </Link>
+              ))}
             </div>
-          </Link>
-        ))}
+          )}
+        </div>
       </div>
     </div>
   )

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { api } from '../../app/apiClient'
 import { useAppDispatch } from '../../app/hooks'
 import { setSession } from '../../features/auth/authSlice'
+import PageHeader from '../../components/ui/PageHeader'
 
 export default function AdminLoginPage() {
   const navigate = useNavigate()
@@ -22,7 +23,7 @@ export default function AdminLoginPage() {
       const res = await api.post('/api/auth/login/', { email, password })
       dispatch(setSession(res.data))
       navigate('/admin/products', { replace: true })
-    } catch (err) {
+    } catch {
       setError('Admin login failed')
     } finally {
       setLoading(false)
@@ -30,38 +31,39 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="mx-auto max-w-md rounded-xl bg-white p-6 shadow">
-      <h1 className="text-xl font-semibold">Admin Login</h1>
-      <form onSubmit={onSubmit} className="mt-4 space-y-3">
-        <div>
-          <label className="text-sm font-medium">Email / Username</label>
-          <input
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-          />
-        </div>
-        <div>
-          <label className="text-sm font-medium">Password</label>
-          <input
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            type="password"
-            required
-            className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-          />
-        </div>
+    <div className="mx-auto w-full max-w-md space-y-5 pt-8">
+      <PageHeader
+        eyebrow="Admin"
+        title="Admin Login"
+        subtitle="Sign in with an admin account to access management tools."
+      />
 
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
+      <div className="card">
+        <div className="card-body">
+          <form onSubmit={onSubmit} className="space-y-3">
+            <div>
+              <label className="text-sm font-semibold text-[var(--ink-700)]">Email / Username</label>
+              <input value={email} onChange={(e) => setEmail(e.target.value)} required className="input mt-1" />
+            </div>
+            <div>
+              <label className="text-sm font-semibold text-[var(--ink-700)]">Password</label>
+              <input
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                type="password"
+                required
+                className="input mt-1"
+              />
+            </div>
 
-        <button
-          disabled={loading}
-          className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
-        >
-          {loading ? 'Logging in...' : 'Login'}
-        </button>
-      </form>
+            {error ? <p className="text-sm font-medium text-rose-600">{error}</p> : null}
+
+            <button disabled={loading} className="btn-primary w-full">
+              {loading ? 'Logging in...' : 'Login'}
+            </button>
+          </form>
+        </div>
+      </div>
     </div>
   )
 }

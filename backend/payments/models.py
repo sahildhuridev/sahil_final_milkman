@@ -12,6 +12,7 @@ class Payment(models.Model):
     ]
     
     PAYMENT_METHOD_CHOICES = [
+        ('paypal', 'PayPal'),
         ('credit_card', 'Credit Card'),
         ('debit_card', 'Debit Card'),
         ('net_banking', 'Net Banking'),

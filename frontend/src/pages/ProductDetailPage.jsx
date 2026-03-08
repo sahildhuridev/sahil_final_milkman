@@ -3,6 +3,9 @@ import { useNavigate, useParams, Link } from 'react-router-dom'
 import { api } from '../app/apiClient'
 import { useAppDispatch, useAppSelector } from '../app/hooks'
 import { setGuestItems } from '../features/cart/cartSlice'
+import LoadingState from '../components/ui/LoadingState'
+import EmptyState from '../components/ui/EmptyState'
+import PageHeader from '../components/ui/PageHeader'
 
 const planOptions = [
   { value: 'one_time', label: 'One-time', priceKey: 'one_time_price' },
@@ -31,7 +34,7 @@ export default function ProductDetailPage() {
       try {
         const res = await api.get(`/api/products/${id}/`)
         setProduct(res.data)
-      } catch (e) {
+      } catch {
         setError('Failed to load product')
       } finally {
         setLoading(false)
@@ -54,8 +57,6 @@ export default function ProductDetailPage() {
 
   const addToGuestCart = () => {
     const pid = Number(id)
-    const q = 1
-
     const existingIndex = guestItems.findIndex(
       (i) => String(i.product_id) === String(pid) && i.plan_type === planType,
     )
@@ -64,13 +65,13 @@ export default function ProductDetailPage() {
     if (existingIndex >= 0) {
       next[existingIndex] = {
         ...next[existingIndex],
-        quantity: next[existingIndex].quantity + q,
+        quantity: next[existingIndex].quantity + 1,
       }
     } else {
       next.push({
         product_id: pid,
         plan_type: planType,
-        quantity: q,
+        quantity: 1,
         product_snapshot: {
           id: product?.id,
           name: product?.name,
@@ -106,83 +107,83 @@ export default function ProductDetailPage() {
   }
 
   if (loading) {
-    return <p className="text-sm text-gray-600">Loading...</p>
+    return <LoadingState label="Loading product..." />
   }
 
   if (!product) {
     return (
-      <div className="rounded-xl bg-white p-6 shadow">
-        <p className="text-sm text-gray-700">Product not found.</p>
-        <Link to="/" className="mt-3 inline-block text-sm font-medium text-blue-600">
-          Back to home
-        </Link>
-      </div>
+      <EmptyState
+        title="Product not found"
+        description="The product might have been removed or is not available."
+        action={<Link to="/" className="btn-primary">Back to home</Link>}
+      />
     )
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-      <div className="rounded-xl bg-white p-4 shadow">
-        <div className="aspect-[4/3] w-full overflow-hidden rounded-lg bg-gray-100">
-          {product.image_url ? (
-            <img src={product.image_url} alt={product.name} className="h-full w-full object-cover" />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-sm text-gray-500">
-              No image
-            </div>
-          )}
+    <div className="space-y-5">
+      <PageHeader
+        eyebrow="Product Details"
+        title={product.name}
+        subtitle={product.category_name}
+        actions={<Link to="/" className="btn-secondary">Back to products</Link>}
+      />
+
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+        <div className="card overflow-hidden p-4">
+          <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl bg-[var(--surface-1)]">
+            {product.image_url ? (
+              <img src={product.image_url} alt={product.name} className="h-full w-full object-cover" />
+            ) : (
+              <div className="grid h-full place-items-center text-sm text-[var(--ink-500)]">No image</div>
+            )}
+          </div>
         </div>
-      </div>
 
-      <div className="rounded-xl bg-white p-6 shadow">
-        <h1 className="text-2xl font-semibold">{product.name}</h1>
-        <p className="mt-1 text-sm text-gray-600">{product.category_name}</p>
-        {product.description ? <p className="mt-4 text-sm text-gray-700">{product.description}</p> : null}
+        <div className="card">
+          <div className="card-body space-y-5">
+            {product.description ? <p className="text-sm leading-relaxed text-[var(--ink-700)]">{product.description}</p> : null}
 
-        <div className="mt-6 space-y-4">
-          <div>
-            <p className="text-sm font-medium text-gray-800">Plan</p>
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              {planOptions.map((p) => (
-                <button
-                  key={p.value}
-                  type="button"
-                  onClick={() => setPlanType(p.value)}
-                  className={
-                    `rounded-md border px-3 py-2 text-left text-sm ` +
-                    (planType === p.value
-                      ? 'border-blue-600 bg-blue-50'
-                      : 'border-gray-200 bg-white hover:bg-gray-50')
-                  }
-                >
-                  <div className="font-medium">{p.label}</div>
-                  <div className="text-xs text-gray-600">₹{Number(product[p.priceKey])}</div>
-                </button>
-              ))}
+            <div>
+              <p className="text-sm font-bold text-[var(--ink-900)]">Choose plan</p>
+              <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {planOptions.map((p) => (
+                  <button
+                    key={p.value}
+                    type="button"
+                    onClick={() => setPlanType(p.value)}
+                    className={`rounded-xl border px-3 py-2 text-left text-sm transition ${
+                      planType === p.value
+                        ? 'border-emerald-400 bg-emerald-50'
+                        : 'border-[var(--line-200)] bg-white hover:bg-[var(--surface-0)]'
+                    }`}
+                  >
+                    <div className="font-semibold">{p.label}</div>
+                    <div className="text-xs text-[var(--ink-500)]">Rs {Number(product[p.priceKey])}</div>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
 
-          <div className="flex items-center gap-3">
-            <div className="flex-1">
-              <p className="text-sm font-medium text-gray-800">Price</p>
-              <p className="mt-1 text-xl font-semibold">₹{price}</p>
+            <div className="rounded-2xl border border-[var(--line-200)] bg-[var(--surface-0)] p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--ink-500)]">Selected price</p>
+              <p className="mt-1 text-2xl font-black text-[var(--ink-900)]">Rs {price}</p>
+              <p className="mt-2 text-xs text-[var(--ink-500)]">
+                Stock: {product.stock_quantity} {product.stock_quantity === 1 ? 'item' : 'items'}
+              </p>
             </div>
+
+            {error ? <p className="text-sm font-medium text-rose-600">{error}</p> : null}
+
+            <button
+              type="button"
+              onClick={user ? addToServerCart : addToGuestCart}
+              disabled={saving}
+              className="btn-primary w-full"
+            >
+              {saving ? 'Adding...' : user ? 'Add to Cart' : 'Add to Cart (login to checkout)'}
+            </button>
           </div>
-
-          {error ? <p className="text-sm text-red-600">{error}</p> : null}
-
-          <button
-            type="button"
-            onClick={user ? addToServerCart : addToGuestCart}
-            disabled={saving}
-            className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
-          >
-            {saving ? 'Adding...' : user ? 'Add to cart' : 'Add to cart (login to checkout)'}
-          </button>
-
-          <p className="text-xs text-gray-500">
-            Stock: {product.stock_quantity} {product.stock_quantity === 1 ? 'item' : 'items'}
-          </p>
         </div>
       </div>
     </div>
