@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import MilkPourSlider from '../components/landing/MilkPourSlider'
 
 export default function LandingPage() {
   return (
@@ -40,20 +41,13 @@ export default function LandingPage() {
           </div>
 
           <div className="relative">
-            <div className="grid gap-3 rounded-3xl border border-[var(--line-200)] bg-[var(--surface-0)] p-5">
-              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">Smart Cart</p>
-                <p className="mt-1 text-sm font-semibold text-emerald-900">Guest cart syncs after login</p>
-              </div>
-              <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">Flexible Orders</p>
-                <p className="mt-1 text-sm font-semibold text-amber-900">One-time, monthly, quarterly, yearly plans</p>
-              </div>
-              <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">Protected Routes</p>
-                <p className="mt-1 text-sm font-semibold text-slate-900">Secure auth for customer and admin portals</p>
-              </div>
-            </div>
+            <MilkPourSlider
+              framesPath="/milk-pour-frames"
+              frameCount={106}
+              startFrame={16}
+              framePrefix="frame_"
+              extension="png"
+            />
           </div>
         </div>
       </section>
