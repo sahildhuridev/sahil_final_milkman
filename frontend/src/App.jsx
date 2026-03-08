@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout'
 import LandingPage from './pages/LandingPage'
 import HomePage from './pages/HomePage'
@@ -23,6 +23,7 @@ import AdminCategoriesPage from './pages/admin/AdminCategoriesPage'
 import AdminOrdersPage from './pages/admin/AdminOrdersPage'
 import AdminPaymentsPage from './pages/admin/AdminPaymentsPage'
 import AdminCustomersPage from './pages/admin/AdminCustomersPage'
+import AdminDashboardPage from './pages/admin/AdminDashboardPage'
 
 export default function App() {
   return (
@@ -49,6 +50,8 @@ export default function App() {
       <Route path="/admin/login" element={<AdminLoginPage />} />
       <Route element={<RequireAdmin />}>
         <Route element={<AdminLayout />}>
+          <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
           <Route path="/admin/products" element={<AdminProductsPage />} />
           <Route path="/admin/categories" element={<AdminCategoriesPage />} />
           <Route path="/admin/orders" element={<AdminOrdersPage />} />

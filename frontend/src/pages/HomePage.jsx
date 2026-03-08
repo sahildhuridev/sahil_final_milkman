@@ -18,17 +18,40 @@ export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState('')
   const [loading, setLoading] = useState(false)
 
+  const fetchAllPages = async (url) => {
+    let nextUrl = url
+    const items = []
+
+    while (nextUrl) {
+      const response = await api.get(nextUrl)
+      const data = response.data
+
+      if (Array.isArray(data)) {
+        items.push(...data)
+        break
+      }
+
+      items.push(...(data?.results || []))
+      nextUrl = data?.next || null
+    }
+
+    return items
+  }
+
   useEffect(() => {
     const run = async () => {
       setLoading(true)
-      const [cRes, pRes] = await Promise.all([api.get('/api/categories/'), api.get('/api/products/')])
+      try {
+        const [catData, prodData] = await Promise.all([
+          fetchAllPages('/api/categories/'),
+          fetchAllPages('/api/products/'),
+        ])
 
-      const catData = Array.isArray(cRes.data) ? cRes.data : cRes.data?.results || []
-      const prodData = Array.isArray(pRes.data) ? pRes.data : pRes.data?.results || []
-
-      setCategories(catData)
-      setProducts(prodData)
-      setLoading(false)
+        setCategories(catData)
+        setProducts(prodData)
+      } finally {
+        setLoading(false)
+      }
     }
 
     run()

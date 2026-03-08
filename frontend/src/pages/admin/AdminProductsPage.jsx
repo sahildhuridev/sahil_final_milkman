@@ -9,7 +9,7 @@ const empty = {
   monthly_price: 0,
   quarterly_price: 0,
   yearly_price: 0,
-  stock_quantity: 0,
+  stock_quantity: 300,
   is_active: true,
 }
 
@@ -23,10 +23,31 @@ export default function AdminProductsPage() {
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
 
+  const fetchAllPages = async (url) => {
+    let nextUrl = url
+    const items = []
+
+    while (nextUrl) {
+      const response = await api.get(nextUrl)
+      const data = response.data
+
+      if (Array.isArray(data)) {
+        items.push(...data)
+        break
+      }
+
+      items.push(...(data?.results || []))
+      nextUrl = data?.next || null
+    }
+
+    return items
+  }
+
   const load = async () => {
-    const [pRes, cRes] = await Promise.all([api.get('/api/products/'), api.get('/api/categories/')])
-    const prodData = Array.isArray(pRes.data) ? pRes.data : pRes.data?.results || []
-    const catData = Array.isArray(cRes.data) ? cRes.data : cRes.data?.results || []
+    const [prodData, catData] = await Promise.all([
+      fetchAllPages('/api/products/'),
+      fetchAllPages('/api/categories/'),
+    ])
     setProducts(prodData)
     setCategories(catData)
   }
@@ -66,6 +87,18 @@ export default function AdminProductsPage() {
       is_active: p.is_active,
     })
     setImage(null)
+  }
+
+  const handleOneTimePriceChange = (value) => {
+    const oneTime = Number(value)
+    const base = Number.isFinite(oneTime) ? oneTime : 0
+    setForm((prev) => ({
+      ...prev,
+      one_time_price: value,
+      monthly_price: base * 20,
+      quarterly_price: base * 80,
+      yearly_price: base * 300,
+    }))
   }
 
   const save = async () => {
@@ -109,6 +142,94 @@ export default function AdminProductsPage() {
 
   return (
     <div className="space-y-5">
+      <div className="card">
+        <div className="card-body space-y-3">
+          <h2 className="text-lg font-black text-[var(--ink-900)]">{selected ? `Edit Product #${selected.id}` : 'Create Product'}</h2>
+
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <input
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              placeholder="Name"
+              className="input"
+            />
+
+            <select
+              value={form.category}
+              onChange={(e) => setForm({ ...form, category: e.target.value })}
+              className="select"
+            >
+              <option value="">Select category</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+
+            <textarea
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              placeholder="Description"
+              className="textarea md:col-span-2"
+              rows={3}
+            />
+
+            <input
+              type="number"
+              value={form.one_time_price}
+              onChange={(e) => handleOneTimePriceChange(e.target.value)}
+              placeholder="One-time price"
+              className="input"
+            />
+            <input
+              type="number"
+              value={form.monthly_price}
+              onChange={(e) => setForm({ ...form, monthly_price: e.target.value })}
+              placeholder="Monthly price"
+              className="input"
+            />
+            <input
+              type="number"
+              value={form.quarterly_price}
+              onChange={(e) => setForm({ ...form, quarterly_price: e.target.value })}
+              placeholder="Quarterly price"
+              className="input"
+            />
+            <input
+              type="number"
+              value={form.yearly_price}
+              onChange={(e) => setForm({ ...form, yearly_price: e.target.value })}
+              placeholder="Yearly price"
+              className="input"
+            />
+
+            <input
+              type="number"
+              value={form.stock_quantity}
+              onChange={(e) => setForm({ ...form, stock_quantity: e.target.value })}
+              placeholder="Stock quantity"
+              className="input"
+            />
+
+            <label className="flex items-center gap-2 rounded-xl border border-[var(--line-200)] px-3 py-2 text-sm text-[var(--ink-700)]">
+              <input
+                type="checkbox"
+                checked={!!form.is_active}
+                onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
+              />
+              Active
+            </label>
+
+            <input type="file" accept="image/*" onChange={(e) => setImage(e.target.files?.[0] || null)} className="input md:col-span-2" />
+          </div>
+
+          <button type="button" onClick={save} disabled={saving} className="btn-primary w-full md:w-auto">
+            {saving ? 'Saving...' : 'Save Product'}
+          </button>
+        </div>
+      </div>
+
       <div className="card">
         <div className="card-body space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -164,94 +285,6 @@ export default function AdminProductsPage() {
               </div>
             ))}
           </div>
-        </div>
-      </div>
-
-      <div className="card">
-        <div className="card-body space-y-3">
-          <h2 className="text-lg font-black text-[var(--ink-900)]">{selected ? `Edit Product #${selected.id}` : 'Create Product'}</h2>
-
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <input
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Name"
-              className="input"
-            />
-
-            <select
-              value={form.category}
-              onChange={(e) => setForm({ ...form, category: e.target.value })}
-              className="select"
-            >
-              <option value="">Select category</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-
-            <textarea
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-              placeholder="Description"
-              className="textarea md:col-span-2"
-              rows={3}
-            />
-
-            <input
-              type="number"
-              value={form.one_time_price}
-              onChange={(e) => setForm({ ...form, one_time_price: e.target.value })}
-              placeholder="One-time price"
-              className="input"
-            />
-            <input
-              type="number"
-              value={form.monthly_price}
-              onChange={(e) => setForm({ ...form, monthly_price: e.target.value })}
-              placeholder="Monthly price"
-              className="input"
-            />
-            <input
-              type="number"
-              value={form.quarterly_price}
-              onChange={(e) => setForm({ ...form, quarterly_price: e.target.value })}
-              placeholder="Quarterly price"
-              className="input"
-            />
-            <input
-              type="number"
-              value={form.yearly_price}
-              onChange={(e) => setForm({ ...form, yearly_price: e.target.value })}
-              placeholder="Yearly price"
-              className="input"
-            />
-
-            <input
-              type="number"
-              value={form.stock_quantity}
-              onChange={(e) => setForm({ ...form, stock_quantity: e.target.value })}
-              placeholder="Stock quantity"
-              className="input"
-            />
-
-            <label className="flex items-center gap-2 rounded-xl border border-[var(--line-200)] px-3 py-2 text-sm text-[var(--ink-700)]">
-              <input
-                type="checkbox"
-                checked={!!form.is_active}
-                onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
-              />
-              Active
-            </label>
-
-            <input type="file" accept="image/*" onChange={(e) => setImage(e.target.files?.[0] || null)} className="input md:col-span-2" />
-          </div>
-
-          <button type="button" onClick={save} disabled={saving} className="btn-primary w-full md:w-auto">
-            {saving ? 'Saving...' : 'Save Product'}
-          </button>
         </div>
       </div>
     </div>

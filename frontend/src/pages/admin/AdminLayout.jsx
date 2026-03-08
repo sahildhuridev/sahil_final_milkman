@@ -25,10 +25,11 @@ export default function AdminLayout() {
               <div className="grid h-9 w-9 place-items-center rounded-xl bg-white/20 text-sm font-extrabold text-white">A</div>
               <div>
                 <div className="text-base font-black tracking-tight text-white">Admin Panel</div>
-                <div className="text-xs text-emerald-100">Manage products, orders, and customers</div>
+                <div className="text-xs text-emerald-100">Dashboard, products, orders, payments, and customers</div>
               </div>
             </div>
             <nav className="flex flex-wrap items-center gap-2">
+              <NavLink to="/admin/dashboard" className={linkClass}>Dashboard</NavLink>
               <NavLink to="/admin/products" className={linkClass}>Products</NavLink>
               <NavLink to="/admin/categories" className={linkClass}>Categories</NavLink>
               <NavLink to="/admin/orders" className={linkClass}>Orders</NavLink>

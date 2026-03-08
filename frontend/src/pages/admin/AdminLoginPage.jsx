@@ -22,7 +22,7 @@ export default function AdminLoginPage() {
     try {
       const res = await api.post('/api/auth/login/', { email, password })
       dispatch(setSession(res.data))
-      navigate('/admin/products', { replace: true })
+      navigate('/admin/dashboard', { replace: true })
     } catch {
       setError('Admin login failed')
     } finally {
