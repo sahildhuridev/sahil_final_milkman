@@ -170,3 +170,20 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='Sahil Milkman <noreply@milkman.local>')
 
+# --- AZURE PRODUCTION SETTINGS ---
+IS_PRODUCTION = os.environ.get('WEBSITE_HOSTNAME') is not None
+
+if IS_PRODUCTION:
+    ALLOWED_HOSTS = ['*']
+    
+    BASE_DIR_PROD = Path('/home')
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR_PROD / 'data' / 'db.sqlite3',
+        }
+    }
+    
+    MEDIA_ROOT = os.path.join(BASE_DIR_PROD, 'data', 'media')
+    STATIC_ROOT = os.path.join(BASE_DIR_PROD, 'site', 'wwwroot', 'staticfiles')
+
