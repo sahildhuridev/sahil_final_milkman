@@ -26,7 +26,7 @@ jobs:
 
             echo "Updating backend"
             cd backend
-            source sahil_env/bin/activate
+            source sahil_venv/bin/activate
             pip install -r requirements.txt
             pm2 restart milkman-backend || pm2 start app.py --name milkman-backend
 
