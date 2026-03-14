@@ -17,23 +17,28 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
+            set -e
             echo "Starting Milkman deployment"
-    
+
             cd ~/projects/sahil_final_milkman
-    
+
             echo "Pull latest code"
-            git pull origin master
-    
+            git fetch origin master
+            git reset --hard origin/master
+
             echo "Updating backend"
             cd backend
             source sahil_env/bin/activate
             pip install -r requirements.txt
             pm2 restart milkman-backend
-    
+
             echo "Updating frontend"
             cd ../frontend
             npm install
-            npm run build
-            pm2 restart milkman-frontend
-    
+            npm run build -- --emptyOutDir
+
+            pm2 delete milkman-frontend || true
+            pm2 start "npx serve -s dist -l 4173" --name milkman-frontend
+            pm2 save
+
             echo "Deployment finished"
