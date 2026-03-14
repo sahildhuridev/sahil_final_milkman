@@ -1,6 +1,22 @@
 import axios from 'axios'
-import { API_BASE_URL } from './env'
 import { clearSession, setAccessToken } from '../features/auth/authSlice'
+
+const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:8000' : '/api'
+
+const normalizeApiUrl = (url) => {
+  if (!url || typeof url !== 'string') return url
+
+  const trimmedUrl = url.trim()
+  if (!trimmedUrl) return trimmedUrl
+
+  try {
+    const parsed = new URL(trimmedUrl, window.location.origin)
+    const normalizedPath = parsed.pathname.replace(/^\/api(?=\/|$)/, '') || '/'
+    return `${normalizedPath}${parsed.search}${parsed.hash}`
+  } catch {
+    return trimmedUrl.replace(/^\/api(?=\/|$)/, '') || '/'
+  }
+}
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -8,6 +24,14 @@ export const api = axios.create({
 
 export const attachInterceptors = (store) => {
   api.interceptors.request.use((config) => {
+    const normalizedUrl = normalizeApiUrl(config.url)
+
+    if (import.meta.env.DEV && typeof normalizedUrl === 'string' && normalizedUrl.startsWith('/')) {
+      config.url = `/api${normalizedUrl}`
+    } else {
+      config.url = normalizedUrl
+    }
+
     const state = store.getState()
     const access = state.auth.accessToken
     if (access) {
@@ -59,7 +83,7 @@ export const attachInterceptors = (store) => {
       isRefreshing = true
 
       try {
-        const resp = await axios.post(`${API_BASE_URL}/api/auth/token/refresh/`, {
+        const resp = await axios.post(`${API_BASE_URL}${normalizeApiUrl('/auth/token/refresh/')}`, {
           refresh,
         })
         const newAccess = resp.data?.access
