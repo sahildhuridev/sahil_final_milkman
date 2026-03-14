@@ -42,11 +42,11 @@ export default function LandingPage() {
 
           <div className="relative">
             <MilkPourSlider
-              framesPath="/milk-pour-frames"
+              framesPath="/milk-pour-frames-webp"
               frameCount={106}
               startFrame={16}
               framePrefix="frame_"
-              extension="png"
+              extension="webp"
             />
           </div>
         </div>
