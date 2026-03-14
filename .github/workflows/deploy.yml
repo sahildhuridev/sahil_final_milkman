@@ -1,0 +1,39 @@
+name: Deploy Milkman
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            echo "Starting Milkman deployment"
+    
+            cd ~/projects/sahil_final_milkman
+    
+            echo "Pull latest code"
+            git pull origin master
+    
+            echo "Updating backend"
+            cd backend
+            source sahil_env/bin/activate
+            pip install -r requirements.txt
+            pm2 restart milkman-backend
+    
+            echo "Updating frontend"
+            cd ../frontend
+            npm install
+            npm run build
+            pm2 restart milkman-frontend
+    
+            echo "Deployment finished"
