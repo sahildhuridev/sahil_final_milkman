@@ -4,6 +4,10 @@ function padFrame(num) {
   return String(num).padStart(3, '0')
 }
 
+function getFrameSrc(framesPath, framePrefix, frameNumber, extension) {
+  return `${framesPath}/${framePrefix}${padFrame(frameNumber)}.${extension}`
+}
+
 export default function MilkPourSlider({
   framesPath = '/milk-pour-frames-webp',
   frameCount = 60,
@@ -11,61 +15,152 @@ export default function MilkPourSlider({
   framePrefix = 'frame_',
   extension = 'webp',
 }) {
+  const containerRef = useRef(null)
   const canvasRef = useRef(null)
   const imagesRef = useRef([])
+  const imagePromisesRef = useRef([])
   const drawRafRef = useRef(null)
+  const preloadIndexRef = useRef(1)
+  const preloadTimerRef = useRef(null)
+  const activeLoadsRef = useRef(0)
   const [slider, setSlider] = useState(0)
   const [loadedCount, setLoadedCount] = useState(0)
   const [hasError, setHasError] = useState(false)
+  const [isVisible, setIsVisible] = useState(false)
 
   const frameIndex = useMemo(() => {
     const t = Math.max(0, Math.min(100, Number(slider) || 0))
-    const idx = Math.round((t / 100) * (frameCount - 1))
-    return idx
+    return Math.round((t / 100) * (frameCount - 1))
   }, [slider, frameCount])
 
-  // Load frames with priority
+  useEffect(() => {
+    if (!containerRef.current || typeof IntersectionObserver === 'undefined') {
+      setIsVisible(true)
+      return undefined
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setIsVisible(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: '200px 0px' },
+    )
+
+    observer.observe(containerRef.current)
+    return () => observer.disconnect()
+  }, [])
+
   useEffect(() => {
     let cancelled = false
     imagesRef.current = new Array(frameCount)
+    imagePromisesRef.current = new Array(frameCount)
+    preloadIndexRef.current = 1
+    activeLoadsRef.current = 0
     setLoadedCount(0)
     setHasError(false)
 
-    const loadFrame = (i) => {
-      if (cancelled) return
-      const frameNumber = startFrame + i
+    const loadFrame = (index, { priority = 'auto' } = {}) => {
+      if (cancelled || index < 0 || index >= frameCount) return Promise.resolve(null)
+      if (imagesRef.current[index]) return Promise.resolve(imagesRef.current[index])
+      if (imagePromisesRef.current[index]) return imagePromisesRef.current[index]
+
+      const frameNumber = startFrame + index
       const img = new Image()
-      img.onload = () => {
-        if (cancelled) return
-        imagesRef.current[i] = img
-        setLoadedCount((c) => c + 1)
+
+      img.decoding = 'async'
+      if ('fetchPriority' in img) {
+        img.fetchPriority = priority
       }
-      img.onerror = () => {
-        if (cancelled) return
-        // If webp fails, maybe user hasn't converted yet, but here we expect it
-        setHasError(true)
-      }
-      img.src = `${framesPath}/${framePrefix}${padFrame(frameNumber)}.${extension}`
+
+      const promise = new Promise((resolve, reject) => {
+        img.onload = () => {
+          if (cancelled) {
+            resolve(null)
+            return
+          }
+
+          imagesRef.current[index] = img
+          setLoadedCount((count) => count + 1)
+          resolve(img)
+        }
+
+        img.onerror = () => {
+          if (!cancelled) {
+            setHasError(true)
+          }
+          reject(new Error(`Failed to load frame ${frameNumber}`))
+        }
+      }).finally(() => {
+        imagePromisesRef.current[index] = null
+      })
+
+      imagePromisesRef.current[index] = promise
+      img.src = getFrameSrc(framesPath, framePrefix, frameNumber, extension)
+      return promise
     }
 
-    // 1. Load the first frame immediately
-    loadFrame(0)
-
-    // 2. Load the rest in small batches or sequence to avoid blocking
-    // We wait a bit for the first frame to likely finish or get ahead
-    const timeoutId = setTimeout(() => {
-      for (let i = 1; i < frameCount; i += 1) {
-        // Stagger loading slightly to not hit the network all at once
-        setTimeout(() => loadFrame(i), i * 10) 
+    const schedule = (callback, delay = 0) => {
+      if (cancelled) return
+      const requestIdle = window.requestIdleCallback
+      if (typeof requestIdle === 'function') {
+        preloadTimerRef.current = requestIdle(callback, { timeout: Math.max(120, delay) })
+      } else {
+        preloadTimerRef.current = window.setTimeout(callback, delay)
       }
-    }, 100)
+    }
+
+    const pumpQueue = () => {
+      if (cancelled || !isVisible || hasError) return
+
+      while (activeLoadsRef.current < 2 && preloadIndexRef.current < frameCount) {
+        const nextIndex = preloadIndexRef.current
+        preloadIndexRef.current += 1
+        activeLoadsRef.current += 1
+
+        loadFrame(nextIndex)
+          .catch(() => null)
+          .finally(() => {
+            activeLoadsRef.current -= 1
+            schedule(pumpQueue, 60)
+          })
+      }
+    }
+
+    loadFrame(0, { priority: 'high' }).then(() => {
+      if (isVisible) {
+        schedule(pumpQueue, 80)
+      }
+    }).catch(() => null)
 
     return () => {
       cancelled = true
-      clearTimeout(timeoutId)
       if (drawRafRef.current) cancelAnimationFrame(drawRafRef.current)
+      if (preloadTimerRef.current) {
+        const cancelIdle = window.cancelIdleCallback
+        if (typeof cancelIdle === 'function') {
+          cancelIdle(preloadTimerRef.current)
+        } else {
+          clearTimeout(preloadTimerRef.current)
+        }
+      }
     }
-  }, [extension, frameCount, framePrefix, framesPath, startFrame])
+  }, [extension, frameCount, framePrefix, framesPath, hasError, isVisible, startFrame])
+
+  useEffect(() => {
+    if (!isVisible || hasError) return
+    if (!imagesRef.current[frameIndex]) {
+      const currentFrame = startFrame + frameIndex
+      const img = new Image()
+      img.decoding = 'async'
+      if ('fetchPriority' in img) {
+        img.fetchPriority = 'high'
+      }
+      img.src = getFrameSrc(framesPath, framePrefix, currentFrame, extension)
+    }
+  }, [extension, frameIndex, framePrefix, framesPath, hasError, isVisible, startFrame])
 
   useEffect(() => {
     if (!canvasRef.current) return
@@ -75,7 +170,6 @@ export default function MilkPourSlider({
 
     const draw = () => {
       const img = imagesRef.current[frameIndex]
-      // Fallback to first frame if current one isn't loaded yet
       const displayImg = img || imagesRef.current[0]
       if (!displayImg) return
 
@@ -99,24 +193,32 @@ export default function MilkPourSlider({
       ctx.drawImage(displayImg, x, y, renderW, renderH)
     }
 
+    const resizeObserver = new ResizeObserver(() => {
+      if (drawRafRef.current) cancelAnimationFrame(drawRafRef.current)
+      drawRafRef.current = requestAnimationFrame(draw)
+    })
+
+    resizeObserver.observe(canvas)
     if (drawRafRef.current) cancelAnimationFrame(drawRafRef.current)
     drawRafRef.current = requestAnimationFrame(draw)
+    return () => {
+      resizeObserver.disconnect()
+      if (drawRafRef.current) cancelAnimationFrame(drawRafRef.current)
+    }
   }, [frameIndex, loadedCount])
 
-  const isReady = loadedCount > 0 && !hasError // Ready as soon as first frame is there
-
   return (
-    <div className="milk-pour-shell">
+    <div ref={containerRef} className="milk-pour-shell">
       <div className="milk-pour-canvas-wrap">
         <canvas ref={canvasRef} className="milk-pour-canvas" />
         {loadedCount < frameCount && !hasError ? (
           <div className="milk-pour-loading-status">
-             Optimizing experience... {loadedCount}/{frameCount}
+            Loading animation... {loadedCount}/{frameCount}
           </div>
         ) : null}
         {hasError && (
           <div className="milk-pour-overlay">
-            Error loading frames.
+            Animation frames are unavailable right now.
           </div>
         )}
       </div>

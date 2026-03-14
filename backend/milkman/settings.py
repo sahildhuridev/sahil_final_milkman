@@ -6,7 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-your-secret-key-here')
 
-DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = ['*']
 
@@ -186,4 +186,3 @@ if IS_PRODUCTION:
     
     MEDIA_ROOT = os.path.join(BASE_DIR_PROD, 'data', 'media')
     STATIC_ROOT = os.path.join(BASE_DIR_PROD, 'site', 'wwwroot', 'staticfiles')
-

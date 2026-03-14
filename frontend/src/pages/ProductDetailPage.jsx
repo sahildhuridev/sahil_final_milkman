@@ -133,7 +133,7 @@ export default function ProductDetailPage() {
         <div className="card overflow-hidden p-4">
           <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl bg-[var(--surface-1)]">
             {product.image_url ? (
-              <img src={product.image_url} alt={product.name} className="h-full w-full object-cover" />
+              <img src={product.image_url} alt={product.name} decoding="async" className="h-full w-full object-cover" />
             ) : (
               <div className="grid h-full place-items-center text-sm text-[var(--ink-500)]">No image</div>
             )}

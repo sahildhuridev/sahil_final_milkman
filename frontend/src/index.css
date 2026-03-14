@@ -236,6 +236,21 @@
     line-height: 1.35;
   }
 
+  .milk-pour-loading-status {
+    position: absolute;
+    left: 0.75rem;
+    right: 0.75rem;
+    bottom: 0.75rem;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.86);
+    color: var(--ink-700);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.45rem 0.7rem;
+    text-align: center;
+    backdrop-filter: blur(8px);
+  }
+
   .milk-pour-slider-wrap {
     display: flex;
     align-items: center;

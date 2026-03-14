@@ -131,7 +131,7 @@ export default function HomePage() {
           >
             <div className="aspect-[4/3] w-full overflow-hidden bg-[var(--surface-1)]">
               {p.image_url ? (
-                <img src={p.image_url} alt={p.name} className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.04]" />
+                <img src={p.image_url} alt={p.name} loading="lazy" decoding="async" className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.04]" />
               ) : (
                 <div className="grid h-full place-items-center text-sm text-[var(--ink-500)]">No image</div>
               )}

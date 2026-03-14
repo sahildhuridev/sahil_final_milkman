@@ -18,7 +18,7 @@ function CartRow({ title, subtitle, unitPrice, totalPrice, quantity, onQtyChange
   return (
     <div className="flex flex-col gap-4 rounded-2xl border border-[var(--line-200)] bg-white p-4 sm:flex-row">
       <div className="h-24 w-full overflow-hidden rounded-xl bg-[var(--surface-1)] sm:w-28">
-        {imageUrl ? <img src={imageUrl} alt={title} className="h-full w-full object-cover" /> : null}
+        {imageUrl ? <img src={imageUrl} alt={title} loading="lazy" decoding="async" className="h-full w-full object-cover" /> : null}
       </div>
       <div className="flex-1">
         <p className="font-bold text-[var(--ink-900)]">{title}</p>

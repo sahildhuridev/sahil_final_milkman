@@ -120,7 +120,7 @@ export default function ProfileDashboardPage() {
               <div className="flex items-center gap-4">
                 <div className="h-20 w-20 overflow-hidden rounded-full border border-[var(--line-200)] bg-white">
                   {profile?.profile_photo_url ? (
-                    <img src={profile.profile_photo_url} alt="Profile" className="h-full w-full object-cover" />
+                    <img src={profile.profile_photo_url} alt="Profile" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                   ) : (
                     <div className="grid h-full w-full place-items-center text-xs font-bold text-[var(--ink-500)]">No Photo</div>
                   )}
