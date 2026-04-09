@@ -1,49 +1,111 @@
+### This website is build to demonstrate:
+CURD Operations functionality 
 
-Output:
-Milkman homepage:
-<img width="1918" height="1013" alt="image" src="https://github.com/user-attachments/assets/300a9f76-48c9-40f0-b478-a23563b3516f" />
+JWT authentication
 
-Filter by Category Functionality:
-<img width="1915" height="1030" alt="image" src="https://github.com/user-attachments/assets/6839d45d-50e7-4cc2-b7c4-a3301aabb967" />
-  
-Product page with Dynamic Subscription plan:
-<img width="1919" height="1032" alt="image" src="https://github.com/user-attachments/assets/c1835023-364f-46ee-9afe-824ba0f33319" />
+SMTP Email login , forget password
 
-Cart Page (requires login to go to payment option) :
-<img width="1919" height="1030" alt="image" src="https://github.com/user-attachments/assets/8ee53da3-3af1-4c59-92f1-933d57f8d22e" />
+Payment Gateway integration 
 
-Sign up Page:
-<img width="1919" height="973" alt="image" src="https://github.com/user-attachments/assets/5f6c3adb-0c6a-4ddb-aaa4-f6a27525858d" />
+Other Ecommerce Functionalities
 
-Login Page ( with validation ) :
-<img width="1919" height="1031" alt="image" src="https://github.com/user-attachments/assets/8f67ccad-294d-4700-bb6b-c006bef67a89" />
+Github CI CD pipeline
 
-Checkout Page : (with auto-save address functionality for easy access) :
-<img width="1919" height="1031" alt="image" src="https://github.com/user-attachments/assets/9cecb060-78d5-43af-abbc-2478c4c71ae4" />
+Azure virtual machine deployment
 
-Payment Page: (with backend api's for payment integration : ) 
-<img width="1919" height="1019" alt="image" src="https://github.com/user-attachments/assets/83942093-ef26-4221-b4e7-2d3c52d277b3" />
+HTTPS certification using Certbot
 
-Customer Dashboard : ( he can view if the order is delivered , pending , or cancelled ( when payment fails) ):
-<img width="1918" height="1026" alt="image" src="https://github.com/user-attachments/assets/28c1105c-e14a-4905-b01c-aa4189cb0071" />
+### High Level System Architecture:
+<img width="5974" height="3201" alt="highlevelsystemarch" src="https://github.com/user-attachments/assets/28022c91-d8de-44da-8dfd-019ee908dfdd" />
 
-Admin login ( given different url from normal customer login for security reasons)
-<img width="1915" height="541" alt="image" src="https://github.com/user-attachments/assets/2dbd0020-7de0-404a-9180-7e4f05b0c79f" />
+### Sequence Diagram:
+<img width="6050" height="3710" alt="sequencediagram" src="https://github.com/user-attachments/assets/862493e1-83ed-49a0-a36e-e25fbda50aa3" />
 
-Admin Panel:
-<img width="1919" height="917" alt="image" src="https://github.com/user-attachments/assets/a4952e9c-8fe8-44c5-9d0f-5c6e2e555ebc" />
+### ER Diagram:
+<img width="5466" height="3681" alt="erdiagram" src="https://github.com/user-attachments/assets/0861d0af-f66d-49a8-baf2-5863296408c8" />
 
-CURD Operations on Product:
-<img width="1919" height="913" alt="image" src="https://github.com/user-attachments/assets/cdb7a5c1-a0b9-4210-b4ee-6a0987aec8e0" />
+### Working:
+Landing Page:
+<img width="1919" height="1028" alt="Screenshot 2026-04-09 022444" src="https://github.com/user-attachments/assets/ed5ee3fb-2959-4ae3-be07-868de3b18585" />
 
-CURD Operations on Category:
-<img width="1919" height="527" alt="image" src="https://github.com/user-attachments/assets/333fafa2-548e-4d70-b285-a9b4f2fa24b1" />
+user flow:
+<img width="5789" height="5391" alt="userflow" src="https://github.com/user-attachments/assets/b2947c10-15ab-40a3-8856-204258848442" />
 
-Orders Panel (  can view all the orders and subscriptions made by customers ) 
-<img width="1919" height="792" alt="image" src="https://github.com/user-attachments/assets/89bc37d1-16d9-481b-aa4a-d43d3d733d8c" />
+Sign up page:
+<img width="1919" height="1031" alt="Screenshot 2026-04-09 022836" src="https://github.com/user-attachments/assets/80d72b82-5462-4063-861c-958228cd3d8e" />
 
-Payments ( tracks which payment passed and failed the payment gateway )
-<img width="1919" height="622" alt="image" src="https://github.com/user-attachments/assets/318a3538-16ad-4790-9aaf-f1f4c152fa9f" />
+Verifying the email through token:
+<img width="1919" height="753" alt="Screenshot 2026-04-09 022909" src="https://github.com/user-attachments/assets/9fb5b6f7-3aca-490d-8a6a-fb36cafcbcbf" />
 
-Customers management:
-<img width="1916" height="823" alt="image" src="https://github.com/user-attachments/assets/20207340-388f-4813-a85b-3425b9eeb672" />
+<img width="1919" height="1030" alt="Screenshot 2026-04-09 022919" src="https://github.com/user-attachments/assets/7ded7563-ddd4-4c69-bd79-d98f7c27a9d2" />
+
+Login page:
+<img width="1915" height="974" alt="Screenshot 2026-04-09 022942" src="https://github.com/user-attachments/assets/b2fa5307-f50a-42a2-85f3-12e133d08098" />
+
+Forget password functionality:
+<img width="1919" height="1028" alt="Screenshot 2026-04-09 022959" src="https://github.com/user-attachments/assets/70e98582-6601-4b11-af19-103f763d7723" />
+
+Forget password token:
+<img width="1919" height="772" alt="Screenshot 2026-04-09 023019" src="https://github.com/user-attachments/assets/158a81a8-8e18-4045-85c9-89637846d3bf" />
+
+Page to reset password:
+<img width="1919" height="1028" alt="Screenshot 2026-04-09 023036" src="https://github.com/user-attachments/assets/955d1384-3d93-4e3a-a9e8-0342b5f6891b" />
+
+Products page:
+<img width="1919" height="1030" alt="Screenshot 2026-04-09 023112" src="https://github.com/user-attachments/assets/89841f67-6cd5-49a4-bd0f-5c53b62b4d4d" />
+
+Filter through category:
+<img width="1914" height="1023" alt="Screenshot 2026-04-09 023123" src="https://github.com/user-attachments/assets/569fa198-d24f-48e5-9535-24fab8a10363" />
+
+Individual product page:
+<img width="1919" height="1030" alt="Screenshot 2026-04-09 023139" src="https://github.com/user-attachments/assets/f7103d5d-4168-4bbe-a8ec-d5c0288b9b37" />
+
+Cart page:
+<img width="1919" height="1032" alt="Screenshot 2026-04-09 023152" src="https://github.com/user-attachments/assets/f6d238d0-3ab4-42fb-bdf5-ac25db57ffa7" />
+
+Checkout page:
+<img width="1916" height="1029" alt="Screenshot 2026-04-09 023306" src="https://github.com/user-attachments/assets/df9f9be1-cab4-4bad-ac73-b5297a62e5cb" />
+
+Payment gateway integration:
+<img width="6605" height="4035" alt="paymentflow" src="https://github.com/user-attachments/assets/78737742-492a-44b4-9894-37cf03b6d748" />
+
+(paypal sandbox)
+<img width="1919" height="1031" alt="Screenshot 2026-04-09 023322" src="https://github.com/user-attachments/assets/8d9d95c0-e38f-4b7d-a744-59a655a20e5f" />
+
+<img width="1918" height="1031" alt="Screenshot 2026-04-09 023337" src="https://github.com/user-attachments/assets/f4a38909-fc7a-418a-9cc9-85cb775e5549" />
+
+Order confirmed ( order status : paid)
+<img width="1916" height="1028" alt="Screenshot 2026-04-09 023454" src="https://github.com/user-attachments/assets/6a343dd8-a3eb-4b04-b906-afc8d20db1a1" />
+
+User Dashboard:
+<img width="1918" height="1028" alt="Screenshot 2026-04-09 023208" src="https://github.com/user-attachments/assets/7e4bea78-84d3-4b4f-a64c-414ea5769d9a" />
+
+User orders:
+<img width="1918" height="1033" alt="Screenshot 2026-04-09 023217" src="https://github.com/user-attachments/assets/198255a6-3561-4b98-85de-f2d6347316b9" />
+
+Order Invoice Download:
+<img width="1918" height="1032" alt="Screenshot 2026-04-09 023251" src="https://github.com/user-attachments/assets/4cdbacfa-9444-40db-b626-28661f9a5ecd" />
+
+### Admin :
+Login:
+<img width="1919" height="698" alt="Screenshot 2026-04-09 023508" src="https://github.com/user-attachments/assets/2908c1fa-4703-466e-be57-8c632c8985dd" />
+
+Dashboard:
+
+<img width="718" height="978" alt="Screenshot 2026-04-09 023539" src="https://github.com/user-attachments/assets/0f0765f5-4dd5-43a8-8f1a-4c921c554fa4" />
+
+Product page:
+<img width="1919" height="1031" alt="Screenshot 2026-04-09 023555" src="https://github.com/user-attachments/assets/fd26b0da-b235-42c2-ba59-a85a0d4fd4c6" />
+
+Category page:
+<img width="1919" height="1024" alt="Screenshot 2026-04-09 023606" src="https://github.com/user-attachments/assets/a65701be-ead0-44b7-b75f-bde06162e296" />
+
+Orders page:
+<img width="1919" height="1029" alt="Screenshot 2026-04-09 023616" src="https://github.com/user-attachments/assets/a515ab51-84c4-4ceb-927c-4499eb6fb265" />
+
+Order history:
+<img width="1919" height="1030" alt="Screenshot 2026-04-09 023627" src="https://github.com/user-attachments/assets/303cc242-9e93-43b1-8599-c204680ff006" />
+
+User Ban Unban:
+<img width="1919" height="1029" alt="Screenshot 2026-04-09 023635" src="https://github.com/user-attachments/assets/d72854cf-64c9-4683-b78c-0204634a6bb9" />
+
